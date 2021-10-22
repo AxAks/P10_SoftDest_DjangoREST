@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'core',
-    'project',
+    'users',
+    'projects'
 ]
 
 REST_FRAMEWORK = {
@@ -92,7 +92,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'core.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
