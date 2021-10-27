@@ -12,3 +12,5 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(_('last name'), max_length=150)
     email = models.EmailField(_('email address'))
 
+    def __str__(self):
+        return self.username

@@ -17,7 +17,6 @@ def signup_view(request):
         data['last_name'] = custom_user.last_name
         data['email'] = custom_user.email
         data['password'] = custom_user.password
-        data['password2'] = custom_user.password2
     else:
         data = serializer.errors
     return Response(data)
