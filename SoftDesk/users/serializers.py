@@ -29,7 +29,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return custom_user
 
 
-class LoginSerializer(serializers.ModelSerializer):
+# pas utilisé ?
+class AuthenticationSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField()
     password = serializers.CharField()

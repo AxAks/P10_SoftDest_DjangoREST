@@ -1,11 +1,15 @@
-from django.contrib.auth import authenticate, login
+import jwt
+from django.contrib.auth import user_logged_in
+from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework_jwt.serializers import jwt_payload_handler
 
-from users.serializers import CreateUserSerializer, LoginSerializer
+from SoftDesk import settings
+from users.models import CustomUser
+from users.serializers import CreateUserSerializer
 
 
 class CreateUserAPIView(APIView):
@@ -19,20 +23,31 @@ class CreateUserAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['POST', ])
-def login_view(request):
-    serializer = LoginSerializer(data=request.data)
-    data = {}
-    if serializer.is_valid():
-        data['username'] = serializer['username'].value
-        data['password'] = serializer['password'].value
-        user = authenticate(request, username=data['username'], password=data['password'])
-        data['response'] = f"successfully logged in as {user}"
-        if not user:
-            login(request, user)
+class AuthenticationAPIView(APIView):
+    permission_classes = (AllowAny,)
 
-        else:
-            pass
-    else:
-        data = serializer.errors
-    return Response(data)
+    def post(self, request):
+
+        try:
+            username = request.data['username']
+            password = request.data['password']
+
+            user = CustomUser.objects.get(username=username)
+            if user and check_password(password, user.password):
+                try:
+                    payload = jwt_payload_handler(user)
+                    token = jwt.encode(payload, settings.SECRET_KEY)
+                    user_details = {'name': f"{user.first_name} {user.last_name}", 'token': token}
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
+                    return Response(user_details, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    raise e
+            else:
+                res = {
+                    'error': 'can not authenticate with the given credentials or the account has been deactivated'}
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+        except KeyError:
+            res = {'error': 'please provide valid username and password'}
+            return Response(res)
