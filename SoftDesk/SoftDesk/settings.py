@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'projects',
-    'api',
 ]
 
 REST_FRAMEWORK = {
@@ -55,15 +54,15 @@ REST_FRAMEWORK = {
     ]
 
 }
-
+"""  # peut etre inutile à voir
 JWT_AUTH = {
 
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
-
 }
+"""
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

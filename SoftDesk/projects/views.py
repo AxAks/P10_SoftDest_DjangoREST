@@ -11,13 +11,13 @@ class ProjectsAPIView(ListAPIView):
     """
     The main endpoint for Projects
     """
-    permission_classes = (AllowAny,) #  changer pour IsAuthenticated
+    permission_classes = (AllowAny,) #  changer pour IsAuthauthor_userenticated
 
     def get(self, request, *args, **kwargs):
         """
-        enables an authenticated user to list all existing projects
+        enables an authenticated user to list all the projects he is part of.
         """
-        projects = [project for project in Project.objects.all()]
+        projects = Project.objects.all()  # il faut seulement les projects dont l'uitlisateur fait partie !!
         serializer = ProjectSerializer(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
