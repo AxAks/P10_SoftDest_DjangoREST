@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'projects',
     'api',
 ]
-"""
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -55,7 +55,7 @@ REST_FRAMEWORK = {
     ]
 
 }
-"""
+
 JWT_AUTH = {
 
     'JWT_VERIFY': True,
