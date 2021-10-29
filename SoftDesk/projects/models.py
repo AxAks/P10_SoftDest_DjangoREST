@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.db import models
 
 from SoftDesk import settings
@@ -37,8 +35,10 @@ class Issue(models.Model):
     priority = models.CharField(max_length=20)
     project_id = models.IntegerField
     status = models.CharField(max_length=20)
-    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='%(class)s_requests_created', on_delete=models.CASCADE)  #CASCADE pas sur !
-    assignee_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='%(class)s_requests_created', on_delete=models.CASCADE)  #CASCADE pas sur !
+    author_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='%(class)s_requests_created', 
+    on_delete=models.CASCADE)  #CASCADE pas sur !
+    assignee_user_id = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='%(class)s_requests_created',
+     on_delete=models.CASCADE)  #CASCADE pas sur !
     created_time = models.DateTimeField(auto_now_add=True)
 
 

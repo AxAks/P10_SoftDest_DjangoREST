@@ -1,12 +1,5 @@
-import json
-from django.contrib.auth import get_user_model
-from django.core import serializers
-from django.shortcuts import render
-
-
-# Create your views here.
 from rest_framework import status
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
