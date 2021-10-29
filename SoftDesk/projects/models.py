@@ -20,13 +20,13 @@ class Project(models.Model):
     objects = models.Manager()
 
 
-"""
 class Contributor(models.Model):
-    user_id = models.IntegerField()
-    project_id = models.IntegerField()
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    project_id = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     permission = models.Choices('read', 'write')  # choix à remplir
     role = models.CharField(max_length=128)
-"""
+
+    objects = models.Manager()
 
 
 class Issue(models.Model):
@@ -34,18 +34,21 @@ class Issue(models.Model):
     description = models.CharField(max_length=1024)
     tag = models.CharField(max_length=128)
     priority = models.CharField(max_length=20)
-    project_id = models.IntegerField()
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     status = models.CharField(max_length=20)
     author_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='author_user_id',
-                                       on_delete=models.CASCADE)
+                                    on_delete=models.CASCADE)
     assignee_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='assignee_user_id',
-                                         on_delete=models.CASCADE)
+                                        on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()
 
 
 class Comment(models.Model):
-    comment_id = models.IntegerField()
     description = models.CharField(max_length=1024)
     author_user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    issue_id = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()
