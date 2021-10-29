@@ -41,7 +41,7 @@ class SpecificProjectAPIView(ListAPIView):
         Returns a specific project by ID
         """
         project_id = kwargs['id']
-        project = Project.objects.get(pk=project_id)
+        project = self.find_project(project_id)
         serializer = ProjectSerializer(project)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
@@ -50,28 +50,28 @@ class SpecificProjectAPIView(ListAPIView):
         Enables the user to update the information of a specific project
         """
         project_id = kwargs['id']
-        project = Project.objects.get(pk=project_id)
+        project = self.find_project(project_id)
 
-        new_project_title = request.data['title'] if request.data['title'] else None
-        new_project_description = request.data['description'] if request.data['description'] else None
-        new_project_type = request.data['type'] if request.data['type'] else None
-        new_project_author_user_id = request.data['author_user_id'] if request.data['author_user_id'] else None
+        project.title = request.data['title'] if request.data['title'] else None
+        project.description = request.data['description'] if request.data['description'] else None
+        project.type = request.data['type'] if request.data['type'] else None
 
-        if new_project_title:
-            project.title = new_project_title
-        if new_project_description:
-            project.description = new_project_description
-        if new_project_type:
-            project.type = new_project_type
-        if new_project_author_user_id:
-            project.author_user_id = new_project_author_user_id
         project.save()
-        serializer = ProjectSerializer(project)
 
+        serializer = ProjectSerializer(project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request, *args, **kwargs):
         """
         Enables the user to delete a given project and all related issues
         """
-        pass
+        project_id = kwargs['id']
+        project = self.find_project(project_id)
+
+        project.delete()
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def find_project(project_id):
+        return Project.objects.get(pk=project_id)
