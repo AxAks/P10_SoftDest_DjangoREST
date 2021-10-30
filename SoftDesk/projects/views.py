@@ -11,14 +11,16 @@ class ProjectsAPIView(ListAPIView):
     """
     The main endpoint for Projects
     """
-    permission_classes = (AllowAny,) #  changer pour IsAuthauthor_userenticated
+    permission_classes = (AllowAny,) #  changer pour IsAuthenticated
+    serializer_class = ProjectSerializer
 
     def get(self, request, *args, **kwargs):
         """
         enables an authenticated user to list all the projects he is part of.
         """
-        projects = Project.objects.all()  # il faut seulement les projects dont l'uitlisateur fait partie !!
-        serializer = ProjectSerializer(projects, many=True)
+        user = request.user
+        projects = Project.objects.filter(author=user.id)  # il faut seulement les projects dont l'uitlisateur fait partie !!
+        serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
     def post(self, request):
@@ -26,7 +28,7 @@ class ProjectsAPIView(ListAPIView):
         enables an authenticated user to create a new project
         """
         project = request.data
-        serializer = ProjectSerializer(data=project)
+        serializer = self.serializer_class(data=project)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -35,6 +37,7 @@ class ProjectsAPIView(ListAPIView):
 
 class SpecificProjectAPIView(ListAPIView):
     permission_classes = (AllowAny,)  #   changer pour IsAuthenticated
+    serializer_class = ProjectSerializer
 
     def get(self, request, *args, **kwargs):
         """
@@ -42,7 +45,7 @@ class SpecificProjectAPIView(ListAPIView):
         """
         project_id = kwargs['id']
         project = self.find_project(project_id)
-        serializer = ProjectSerializer(project)
+        serializer = self.serializer_class(project)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
     def put(self, request, *args, **kwargs):
@@ -58,7 +61,7 @@ class SpecificProjectAPIView(ListAPIView):
 
         project.save()
 
-        serializer = ProjectSerializer(project)
+        serializer = self.serializer_class(project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def delete(self, request, *args, **kwargs):
@@ -69,7 +72,7 @@ class SpecificProjectAPIView(ListAPIView):
         project = self.find_project(project_id)
 
         project.delete()
-        serializer = ProjectSerializer(project)
+        serializer = self.serializer_class(project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod

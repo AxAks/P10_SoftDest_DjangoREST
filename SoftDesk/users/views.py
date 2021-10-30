@@ -9,22 +9,24 @@ from rest_framework_jwt.serializers import jwt_payload_handler
 
 from SoftDesk import settings
 from users.models import CustomUser
-from users.serializers import CreateUserSerializer
+from users.serializers import UserSerializer
 
 
 class CreateUserAPIView(APIView):
     permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
 
     def post(self, request):
         user = request.data
-        serializer = CreateUserSerializer(data=user)
+        serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AuthenticationAPIView(APIView):
+class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
     permission_classes = (AllowAny,)
+    serializer_class = UserSerializer  # pas utilisé ici
 
     def post(self, request):
 
