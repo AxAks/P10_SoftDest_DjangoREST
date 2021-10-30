@@ -19,7 +19,7 @@ class ProjectsAPIView(ListAPIView):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = Project.objects.filter(author=user.id)  # il faut seulement les projects dont l'uitlisateur fait partie !!
+        projects = Project.objects.filter(author=user.id)  # marche pas à cause de l'identification'
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
