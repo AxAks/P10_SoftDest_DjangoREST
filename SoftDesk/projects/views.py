@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
@@ -11,7 +11,7 @@ class ProjectsAPIView(ListAPIView):
     """
     The main endpoint for Projects
     """
-    permission_classes = (AllowAny,) #  changer pour IsAuthenticated
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
     def get(self, request, *args, **kwargs):
@@ -19,7 +19,7 @@ class ProjectsAPIView(ListAPIView):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = Project.objects.filter(author=user.id)  # marche pas à cause de l'identification'
+        projects = Project.objects.filter(author=user.id)
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
@@ -36,7 +36,7 @@ class ProjectsAPIView(ListAPIView):
 
 
 class SpecificProjectAPIView(ListAPIView):
-    permission_classes = (AllowAny,)  #   changer pour IsAuthenticated
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
     def get(self, request, *args, **kwargs):
@@ -55,14 +55,15 @@ class SpecificProjectAPIView(ListAPIView):
         project_id = kwargs['id']
         project = self.find_project(project_id)
 
-        project.title = request.data['title'] if request.data['title'] else None
-        project.description = request.data['description'] if request.data['description'] else None
-        project.type = request.data['type'] if request.data['type'] else None
+        project.title = request.data['title'] if 'title' in request.data.keys() else project.title
+        project.description = request.data['description'] \
+            if 'description' in request.data.keys() else project.description
+        project.type = request.data['type']if 'type' in request.data.keys() else project.type
 
         project.save()
 
         serializer = self.serializer_class(project)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.data)
 
     def delete(self, request, *args, **kwargs):
         """
@@ -76,5 +77,5 @@ class SpecificProjectAPIView(ListAPIView):
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
-    def find_project(project_id):
+    def find_project(project_id) -> Project:
         return Project.objects.get(pk=project_id)
