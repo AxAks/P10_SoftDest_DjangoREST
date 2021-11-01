@@ -2,7 +2,8 @@ import jwt
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_jwt.serializers import jwt_payload_handler
@@ -53,3 +54,16 @@ class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de seriali
         except KeyError:
             res = {'error': 'please provide valid username and password'}
             return Response(res)
+
+
+class ListUsersAPIView(ListAPIView):
+    """
+    Enables an authenticated user to list all other registered users
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+
+    def get(self, request, **kwargs):
+        users = CustomUser.objects.all()
+        serializer = self.serializer_class(users, many=True)
+        return Response({'users': serializer.data}) if serializer.data else Response("No users to display")
