@@ -2,12 +2,13 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from projects.models import Project
-from projects.serializers import ProjectSerializer
+from projects.models import Project, Contributor
+from projects.serializers import ProjectSerializer, ContributorSerializer
 
 
-class ProjectsAPIView(ListAPIView):
+class ProjectsAPIView(APIView):
     """
     The main endpoint for Projects
     """
@@ -79,3 +80,66 @@ class SpecificProjectAPIView(ListAPIView):
     @staticmethod
     def find_project(project_id) -> Project:
         return Project.objects.get(pk=project_id)
+
+
+class ContributorAPIView(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ContributorSerializer
+
+    def get(self, request, **kwargs):
+        """
+        List all contributors of a given project
+        """
+        contributors = Contributor.objects.filter(project=request.data.project)
+        serializer = self.serializer_class(contributors, many=True)
+        return Response({'contributors': serializer.data}) if serializer.data \
+            else Response("No contributors to display")
+
+    def post(self, request, **kwargs):
+        """
+        Add a contributor to a given project
+        """
+        contributor = request.data
+        serializer = self.serializer_class(data=contributor)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SpecificContributorAPIView(APIView):
+    """
+
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = ContributorSerializer
+
+    def get(self, request, **kwargs):
+        """
+        Returns a specific contributor to a project by ID
+        """
+        contributor_id = kwargs['id']
+        contributor = self.find_contributor(contributor_id)
+        serializer = self.serializer_class(contributor)
+        return Response(serializer.data) if serializer.data else Response("No project to display")
+
+    def post(self, request, **kwargs):
+        """
+
+        """
+        pass
+
+    def delete(self, request, **kwargs):
+        """
+        remove users from a given project
+        """
+        contributor_id = kwargs['id']
+        contributor = self.find_contributor(contributor_id)
+
+        contributor.delete()
+        serializer = self.serializer_class(contributor)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def find_contributor(contributor_id) -> Contributor:
+        return Contributor.objects.get(pk=contributor_id)

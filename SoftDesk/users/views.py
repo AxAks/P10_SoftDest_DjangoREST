@@ -2,10 +2,10 @@ import jwt
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from SoftDesk import settings
@@ -31,7 +31,7 @@ class CreateUserAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
+class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
     """
 
     """
@@ -67,10 +67,11 @@ class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de seriali
             return Response(res)
 
 
-class ListUsersAPIView(ListAPIView):
+class ListUsersAPIView(ModelViewSet):
     """
 
     """
+    queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
@@ -78,6 +79,4 @@ class ListUsersAPIView(ListAPIView):
         """
         Enables an authenticated user to list all other registered users
         """
-        users = CustomUser.objects.all()
-        serializer = self.serializer_class(users, many=True)
-        return Response({'users': serializer.data}) if serializer.data else Response("No users to display")
+        return Response(self.queryset) if self.queryset else Response("No users to display")

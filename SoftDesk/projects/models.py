@@ -24,9 +24,10 @@ class Contributor(models.Model):
     """
 
     """
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    permission = models.Choices('read', 'write')  # choix à remplir
+    permission = models.CharField(max_length=128)  # choix à remplir
     role = models.CharField(max_length=128)
 
     objects = models.Manager()
@@ -39,10 +40,10 @@ class Issue(models.Model):
     priority = models.CharField(max_length=20)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     status = models.CharField(max_length=20)
-    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='author',
-                                    on_delete=models.CASCADE)
-    assignee = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='assignee',
-                                      on_delete=models.CASCADE)
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_author',
+                               on_delete=models.CASCADE)
+    assignee = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_assignee',
+                                 on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager()
@@ -50,7 +51,8 @@ class Issue(models.Model):
 
 class Comment(models.Model):
     description = models.CharField(max_length=1024)
-    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+                               on_delete=models.CASCADE)
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 

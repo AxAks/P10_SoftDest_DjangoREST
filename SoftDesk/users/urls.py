@@ -6,5 +6,5 @@ app_name = "users"
 urlpatterns = [
     path('signup', CreateUserAPIView.as_view()),
     path('login', AuthenticationAPIView.as_view()),
-    path('users', ListUsersAPIView.as_view())  # test à retirer ensuite peut-etre
+    path('users', ListUsersAPIView.as_view({'get': 'list'}))  # test à retirer ensuite peut-etre
 ]
