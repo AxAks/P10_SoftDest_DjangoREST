@@ -44,7 +44,7 @@ class SpecificProjectAPIView(APIView):
         Returns a specific project by ID
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)
+        project = self.find_project(project_id)    # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(project)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
@@ -53,7 +53,7 @@ class SpecificProjectAPIView(APIView):
         Enables the user to update the information of a specific project
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)
+        project = self.find_project(project_id)   # pb si pas de correspondance !! à gérer
 
         project.title = request.data['title'] if 'title' in request.data.keys() else project.title
         project.description = request.data['description'] \
@@ -70,7 +70,7 @@ class SpecificProjectAPIView(APIView):
         Enables the user to delete a given project and all related issues
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)
+        project = self.find_project(project_id)   # pb si pas de correspondance !! à gérer
 
         project.delete()
         serializer = self.serializer_class(project)
@@ -121,7 +121,7 @@ class SpecificContributorAPIView(APIView):
         Returns a specific contributor to a project by ID
         """
         contributor_id = kwargs['id']
-        contributor = self.find_contributor(contributor_id)
+        contributor = self.find_contributor(contributor_id)   # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(contributor)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
@@ -130,7 +130,7 @@ class SpecificContributorAPIView(APIView):
         remove users from a given project
         """
         contributor_id = kwargs['id']
-        contributor = self.find_contributor(contributor_id)
+        contributor = self.find_contributor(contributor_id)   # pb si pas de correspondance !! à gérer
 
         contributor.delete()
         serializer = self.serializer_class(contributor)
@@ -181,7 +181,7 @@ class SpecificIssueAPIView(APIView):
         Returns a specific issue by ID
         """
         issue_id = kwargs['id']
-        issue = self.find_issue(issue_id)
+        issue = self.find_issue(issue_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(issue)
         return Response(serializer.data) if serializer.data else Response("No issue to display")
 
@@ -190,7 +190,7 @@ class SpecificIssueAPIView(APIView):
         Updates a specific issue
         """
         issue_id = kwargs['id']
-        issue = self.find_issue(issue_id)
+        issue = self.find_issue(issue_id)   # pb si pas de correspondance !! à gérer
 
         issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
         issue.description = request.data['description'] \
@@ -212,7 +212,7 @@ class SpecificIssueAPIView(APIView):
         Remove a contributor from a Project
         """
         issue_id = kwargs['id']
-        issue = self.find_issue(issue_id)
+        issue = self.find_issue(issue_id)   # pb si pas de correspondance !! à gérer
 
         issue.delete()
         serializer = self.serializer_class(issue)
@@ -220,7 +220,7 @@ class SpecificIssueAPIView(APIView):
 
     @staticmethod
     def find_issue(issue_id) -> Issue:
-        return Issue.objects.get(pk=issue_id)
+        return Issue.objects.get(id=issue_id)
 
 
 class CommentAPIView(APIView):
@@ -263,7 +263,7 @@ class SpecificCommentAPIView(APIView):
         Returns a specific Comment on a issue by ID
         """
         comment_id = kwargs['id']
-        comment = self.find_comment(comment_id)
+        comment = self.find_comment(comment_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(comment)
         return Response(serializer.data) if serializer.data else Response("No comment to display")
 
@@ -272,7 +272,7 @@ class SpecificCommentAPIView(APIView):
         Updates a specific Comment on a issue by ID
         """
         comment_id = kwargs['id']
-        comment = self.find_comment(comment_id)
+        comment = self.find_comment(comment_id)   # pb si pas de correspondance !! à gérer
 
         comment.description = request.data['description'] \
             if 'description' in request.data.keys() else comment.description
@@ -289,7 +289,7 @@ class SpecificCommentAPIView(APIView):
         Deletes a specific Comment on a issue by ID
         """
         comment_id = kwargs['id']
-        comment = self.find_comment(comment_id)
+        comment = self.find_comment(comment_id)   # pb si pas de correspondance !! à gérer
 
         comment.delete()
         serializer = self.serializer_class(comment)
