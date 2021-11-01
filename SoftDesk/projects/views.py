@@ -1,10 +1,9 @@
 from rest_framework import status
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 
-from projects.models import Project, Contributor, Issue
+from projects.models import Project, Contributor, Issue, Comment
 from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
 
@@ -36,7 +35,7 @@ class ProjectsAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SpecificProjectAPIView(ListAPIView):
+class SpecificProjectAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
@@ -83,7 +82,10 @@ class SpecificProjectAPIView(ListAPIView):
 
 
 class ContributorAPIView(APIView):
-    permission_classes = (AllowAny,)
+    """
+    Main end point for contributors
+    """
+    permission_classes = (IsAuthenticated,)
     serializer_class = ContributorSerializer
 
     def get(self, request, **kwargs):
@@ -109,7 +111,7 @@ class ContributorAPIView(APIView):
 
 class SpecificContributorAPIView(APIView):
     """
-
+    End point for Specific contributor
     """
     permission_classes = (IsAuthenticated,)
     serializer_class = ContributorSerializer
@@ -140,6 +142,9 @@ class SpecificContributorAPIView(APIView):
 
 
 class IssueAPIView(APIView):
+    """
+    Main end point for issues
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = IssueSerializer
 
@@ -165,6 +170,9 @@ class IssueAPIView(APIView):
 
 
 class SpecificIssueAPIView(APIView):
+    """
+    End point for Specific issue
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = IssueSerializer
 
@@ -213,6 +221,9 @@ class SpecificIssueAPIView(APIView):
 
 
 class CommentAPIView(APIView):
+    """
+    Main end point for comments
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = CommentSerializer
 
@@ -230,6 +241,9 @@ class CommentAPIView(APIView):
 
 
 class SpecificCommentAPIView(APIView):
+    """
+    End point for Specific comment
+    """
     permission_classes = (IsAuthenticated,)
     serializer_class = CommentSerializer
 
