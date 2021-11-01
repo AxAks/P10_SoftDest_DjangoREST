@@ -38,7 +38,8 @@ class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serial
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer  # pas utilisé ici
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         """
         Enables the user to send their infos to login
         """
@@ -75,7 +76,7 @@ class ListUsersAPIView(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
-    def get(self, request, **kwargs):
+    def get(self):
         """
         Enables an authenticated user to list all other registered users
         """
