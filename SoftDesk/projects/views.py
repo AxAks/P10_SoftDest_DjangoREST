@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from projects.models import Project, Contributor, Issue, Comment
@@ -14,7 +14,7 @@ class ProjectsAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         """
         enables an authenticated user to list all the projects he is part of.
         """
@@ -39,7 +39,7 @@ class SpecificProjectAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, **kwargs):
         """
         Returns a specific project by ID
         """
@@ -48,7 +48,7 @@ class SpecificProjectAPIView(APIView):
         serializer = self.serializer_class(project)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request, **kwargs):
         """
         Enables the user to update the information of a specific project
         """
@@ -65,7 +65,7 @@ class SpecificProjectAPIView(APIView):
         serializer = self.serializer_class(project)
         return Response(serializer.data)
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, **kwargs):
         """
         Enables the user to delete a given project and all related issues
         """
@@ -92,7 +92,7 @@ class ContributorAPIView(APIView):
         """
         List all contributors of a given project
         """
-        contributors = Contributor.objects.filter(project=request.data.project)
+        contributors = Contributor.objects.filter(project=kwargs['project'])
         serializer = self.serializer_class(contributors, many=True)
         return Response({'contributors': serializer.data}) if serializer.data \
             else Response("No contributors to display")
@@ -152,7 +152,7 @@ class IssueAPIView(APIView):
         """
         Lists all issue of a given project
         """
-        issues = Contributor.objects.filter(project=request.data.project)
+        issues = Contributor.objects.filter(project=kwargs['project'])
         serializer = self.serializer_class(issues, many=True)
         return Response({'contributors': serializer.data}) if serializer.data \
             else Response("No issues to display")
@@ -180,11 +180,14 @@ class SpecificIssueAPIView(APIView):
         """
         Returns a specific issue by ID
         """
-        pass
+        issue_id = kwargs['id']
+        issue = self.find_issue(issue_id)
+        serializer = self.serializer_class(issue)
+        return Response(serializer.data) if serializer.data else Response("No issue to display")
 
     def put(self, request, **kwargs):
         """
-
+        Updates a specific issue
         """
         issue_id = kwargs['id']
         issue = self.find_issue(issue_id)
@@ -206,7 +209,7 @@ class SpecificIssueAPIView(APIView):
 
     def delete(self, request, **kwargs):
         """
-
+        Remove a contributor from a Project
         """
         issue_id = kwargs['id']
         issue = self.find_issue(issue_id)
@@ -217,7 +220,7 @@ class SpecificIssueAPIView(APIView):
 
     @staticmethod
     def find_issue(issue_id) -> Issue:
-        return Contributor.objects.get(pk=issue_id)
+        return Issue.objects.get(pk=issue_id)
 
 
 class CommentAPIView(APIView):
@@ -231,13 +234,21 @@ class CommentAPIView(APIView):
         """
         Lists all comments on a project related issue
         """
-        pass
+        comments = Comment.objects.filter(issue=kwargs['issue'])
+        serializer = self.serializer_class(comments, many=True)
+        return Response({'comments': serializer.data}) if serializer.data \
+            else Response("No comments to display")
 
     def post(self, request, **kwargs):
         """
-        Add a comment to a project related issue
+        Add a comment to a project-related issue
         """
-        pass
+        comment = request.data
+        serializer = self.serializer_class(data=comment)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class SpecificCommentAPIView(APIView):
@@ -251,16 +262,39 @@ class SpecificCommentAPIView(APIView):
         """
         Returns a specific Comment on a issue by ID
         """
-        pass
+        comment_id = kwargs['id']
+        comment = self.find_comment(comment_id)
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data) if serializer.data else Response("No comment to display")
 
     def put(self, request, **kwargs):
         """
         Updates a specific Comment on a issue by ID
         """
-        pass
+        comment_id = kwargs['id']
+        comment = self.find_comment(comment_id)
+
+        comment.description = request.data['description'] \
+            if 'description' in request.data.keys() else comment.description
+        comment.author = request.data['author'] if 'author' in request.data.keys() else comment.author
+        comment.issue = request.data['issue'] if 'issue' in request.data.keys() else comment.issue
+
+        comment.save()
+
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data)
 
     def delete(self, request, **kwargs):
         """
         Deletes a specific Comment on a issue by ID
         """
-        pass
+        comment_id = kwargs['id']
+        comment = self.find_comment(comment_id)
+
+        comment.delete()
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def find_comment(comment_id) -> Comment:
+        return Comment.objects.get(pk=comment_id)

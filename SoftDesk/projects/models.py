@@ -15,7 +15,7 @@ class Project(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'"{self.title}" by {self.author}: {self.type}'
+        return f'"{self.title} ({self.type})" by {self.author}'
 
     objects = models.Manager()
 
@@ -29,6 +29,9 @@ class Contributor(models.Model):
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     permission = models.CharField(max_length=128)  # choix à remplir
     role = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'{self.user}: {self.role} for {self.project}'
 
     objects = models.Manager()
 
