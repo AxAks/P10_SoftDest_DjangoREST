@@ -14,10 +14,16 @@ from users.serializers import UserSerializer
 
 
 class CreateUserAPIView(APIView):
+    """
+
+    """
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 
     def post(self, request):
+        """
+        Enables the user to send their infos to register
+        """
         user = request.data
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
@@ -26,11 +32,16 @@ class CreateUserAPIView(APIView):
 
 
 class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
+    """
+
+    """
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer  # pas utilisé ici
 
     def post(self, request):
-
+        """
+        Enables the user to send their infos to login
+        """
         try:
             username = request.data['username']
             password = request.data['password']
@@ -58,12 +69,15 @@ class AuthenticationAPIView(APIView):  # peut etre à revoir car pas de seriali
 
 class ListUsersAPIView(ListAPIView):
     """
-    Enables an authenticated user to list all other registered users
+
     """
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
 
     def get(self, request, **kwargs):
+        """
+        Enables an authenticated user to list all other registered users
+        """
         users = CustomUser.objects.all()
         serializer = self.serializer_class(users, many=True)
         return Response({'users': serializer.data}) if serializer.data else Response("No users to display")
