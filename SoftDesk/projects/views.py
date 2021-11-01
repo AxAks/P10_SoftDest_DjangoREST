@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from projects.models import Project, Contributor
-from projects.serializers import ProjectSerializer, ContributorSerializer
+from projects.models import Project, Contributor, Issue
+from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
 
 class ProjectsAPIView(APIView):
@@ -111,7 +111,7 @@ class SpecificContributorAPIView(APIView):
     """
 
     """
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = ContributorSerializer
 
     def get(self, request, **kwargs):
@@ -122,12 +122,6 @@ class SpecificContributorAPIView(APIView):
         contributor = self.find_contributor(contributor_id)
         serializer = self.serializer_class(contributor)
         return Response(serializer.data) if serializer.data else Response("No project to display")
-
-    def post(self, request, **kwargs):
-        """
-
-        """
-        pass
 
     def delete(self, request, **kwargs):
         """
@@ -143,3 +137,116 @@ class SpecificContributorAPIView(APIView):
     @staticmethod
     def find_contributor(contributor_id) -> Contributor:
         return Contributor.objects.get(pk=contributor_id)
+
+
+class IssueAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = IssueSerializer
+
+    def get(self, request, **kwargs):
+        """
+        Lists all issue of a given project
+        """
+        issues = Contributor.objects.filter(project=request.data.project)
+        serializer = self.serializer_class(issues, many=True)
+        return Response({'contributors': serializer.data}) if serializer.data \
+            else Response("No issues to display")
+
+    def post(self, request, **kwargs):
+        """
+        Adds an issue to a given project
+        """
+        issue = request.data
+        serializer = self.serializer_class(data=issue)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SpecificIssueAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = IssueSerializer
+
+    def get(self, request, **kwargs):
+        """
+        Returns a specific issue by ID
+        """
+        pass
+
+    def put(self, request, **kwargs):
+        """
+
+        """
+        issue_id = kwargs['id']
+        issue = self.find_issue(issue_id)
+
+        issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
+        issue.description = request.data['description'] \
+            if 'description' in request.data.keys() else issue.description
+        issue.tag = request.data['tag']if 'tag' in request.data.keys() else issue.tag
+        issue.priority = request.data['priority']if 'priority' in request.data.keys() else issue.priority
+        issue.project = request.data['project']if 'project' in request.data.keys() else issue.project
+        issue.status = request.data['status']if 'status' in request.data.keys() else issue.status
+        issue.author = request.data['author']if 'author' in request.data.keys() else issue.author
+        issue.assignee = request.data['assignee']if 'assignee' in request.data.keys() else issue.assignee
+
+        issue.save()
+
+        serializer = self.serializer_class(issue)
+        return Response(serializer.data)
+
+    def delete(self, request, **kwargs):
+        """
+
+        """
+        issue_id = kwargs['id']
+        issue = self.find_issue(issue_id)
+
+        issue.delete()
+        serializer = self.serializer_class(issue)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def find_issue(issue_id) -> Issue:
+        return Contributor.objects.get(pk=issue_id)
+
+
+class CommentAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CommentSerializer
+
+    def get(self, request, **kwargs):
+        """
+        Lists all comments on a project related issue
+        """
+        pass
+
+    def post(self, request, **kwargs):
+        """
+        Add a comment to a project related issue
+        """
+        pass
+
+
+class SpecificCommentAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CommentSerializer
+
+    def get(self, request, **kwargs):
+        """
+        Returns a specific Comment on a issue by ID
+        """
+        pass
+
+    def put(self, request, **kwargs):
+        """
+        Updates a specific Comment on a issue by ID
+        """
+        pass
+
+    def delete(self, request, **kwargs):
+        """
+        Deletes a specific Comment on a issue by ID
+        """
+        pass
