@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 
 from projects.models import Project, Contributor, Issue, Comment
@@ -36,7 +36,7 @@ class ProjectsAPIView(APIView):
 
 
 class SpecificProjectAPIView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)  # à changer pour IsAuthenticated
     serializer_class = ProjectSerializer
 
     def get(self, request, **kwargs):
@@ -46,7 +46,7 @@ class SpecificProjectAPIView(APIView):
         project_id = kwargs['id']
         project = self.find_project(project_id)    # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(project)
-        return Response(serializer.data) if serializer.data else Response("No project to display")
+        return Response(serializer.data) if serializer.data else Response("No projects to display")
 
     def put(self, request, **kwargs):
         """
@@ -66,6 +66,7 @@ class SpecificProjectAPIView(APIView):
         return Response(serializer.data)
 
     def delete(self, request, **kwargs):
+
         """
         Enables the user to delete a given project and all related issues
         """

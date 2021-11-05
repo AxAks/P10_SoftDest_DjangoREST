@@ -1,6 +1,4 @@
 from django.urls import path
-
-from projects.models import Project
 from projects.views import ProjectsAPIView, SpecificProjectAPIView,\
     ContributorAPIView, SpecificContributorAPIView, IssueAPIView, SpecificIssueAPIView, CommentAPIView, SpecificCommentAPIView
 

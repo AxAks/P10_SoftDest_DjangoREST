@@ -22,7 +22,7 @@ class Project(models.Model):
 
 class Contributor(models.Model):
     """
-
+    Model through linking users to projects
     """
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
@@ -37,6 +37,9 @@ class Contributor(models.Model):
 
 
 class Issue(models.Model):
+    """
+    Model for the project-related issues
+    """
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=1024)
     tag = models.CharField(max_length=128)
@@ -53,6 +56,9 @@ class Issue(models.Model):
 
 
 class Comment(models.Model):
+    """
+    Model for the project-related comments
+    """
     description = models.CharField(max_length=1024)
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                on_delete=models.CASCADE)
