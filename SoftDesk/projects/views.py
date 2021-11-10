@@ -46,6 +46,7 @@ class SpecificProjectAPIView(APIView):
         project_id = kwargs['id']
         project = self.find_project(project_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(project)
+
         return Response(serializer.data) if serializer.data else Response("No projects to display")
 
     def put(self, request, **kwargs):

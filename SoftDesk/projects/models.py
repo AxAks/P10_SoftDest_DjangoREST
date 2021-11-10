@@ -16,7 +16,7 @@ class Project(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} ({self.type['types'].name}) by {self.author}"
+        return f"{self.title} ({self.type}) by {self.author}"
 
     objects = models.Manager()
 
