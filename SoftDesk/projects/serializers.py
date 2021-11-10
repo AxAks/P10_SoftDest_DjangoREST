@@ -1,13 +1,18 @@
 from rest_framework import serializers
 
+from constants import PROJECT_TYPES
 from projects.models import Project, Issue, Comment, Contributor
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    type = serializers.ChoiceField(choices=PROJECT_TYPES)
 
     class Meta:
         model = Project
         fields = ['title', 'description', 'type', 'author']
+
+    def create(self, validated_data):
+        return Project.objects.create(**validated_data)
 
 
 class ContributorSerializer(serializers.ModelSerializer):

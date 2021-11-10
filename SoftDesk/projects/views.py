@@ -11,7 +11,7 @@ class ProjectsAPIView(APIView):
     """
     The main endpoint for Projects
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)  #  à changer pour IsAuthenticated
     serializer_class = ProjectSerializer
 
     def get(self, request):
@@ -44,7 +44,7 @@ class SpecificProjectAPIView(APIView):
         Returns a specific project by ID
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)    # pb si pas de correspondance !! à gérer
+        project = self.find_project(project_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(project)
         return Response(serializer.data) if serializer.data else Response("No projects to display")
 
@@ -53,12 +53,12 @@ class SpecificProjectAPIView(APIView):
         Enables the user to update the information of a specific project
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)   # pb si pas de correspondance !! à gérer
+        project = self.find_project(project_id)  # pb si pas de correspondance !! à gérer
 
         project.title = request.data['title'] if 'title' in request.data.keys() else project.title
         project.description = request.data['description'] \
             if 'description' in request.data.keys() else project.description
-        project.type = request.data['type']if 'type' in request.data.keys() else project.type
+        project.type = request.data['type'] if 'type' in request.data.keys() else project.type
 
         project.save()
 
@@ -66,12 +66,11 @@ class SpecificProjectAPIView(APIView):
         return Response(serializer.data)
 
     def delete(self, request, **kwargs):
-
         """
         Enables the user to delete a given project and all related issues
         """
         project_id = kwargs['id']
-        project = self.find_project(project_id)   # pb si pas de correspondance !! à gérer
+        project = self.find_project(project_id)  # pb si pas de correspondance !! à gérer
 
         project.delete()
         serializer = self.serializer_class(project)
@@ -122,7 +121,7 @@ class SpecificContributorAPIView(APIView):
         Returns a specific contributor to a project by ID
         """
         contributor_id = kwargs['id']
-        contributor = self.find_contributor(contributor_id)   # pb si pas de correspondance !! à gérer
+        contributor = self.find_contributor(contributor_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(contributor)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
@@ -131,7 +130,7 @@ class SpecificContributorAPIView(APIView):
         remove users from a given project
         """
         contributor_id = kwargs['id']
-        contributor = self.find_contributor(contributor_id)   # pb si pas de correspondance !! à gérer
+        contributor = self.find_contributor(contributor_id)  # pb si pas de correspondance !! à gérer
 
         contributor.delete()
         serializer = self.serializer_class(contributor)
@@ -191,17 +190,17 @@ class SpecificIssueAPIView(APIView):
         Updates a specific issue
         """
         issue_id = kwargs['id']
-        issue = self.find_issue(issue_id)   # pb si pas de correspondance !! à gérer
+        issue = self.find_issue(issue_id)  # pb si pas de correspondance !! à gérer
 
         issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
         issue.description = request.data['description'] \
             if 'description' in request.data.keys() else issue.description
-        issue.tag = request.data['tag']if 'tag' in request.data.keys() else issue.tag
-        issue.priority = request.data['priority']if 'priority' in request.data.keys() else issue.priority
-        issue.project = request.data['project']if 'project' in request.data.keys() else issue.project
-        issue.status = request.data['status']if 'status' in request.data.keys() else issue.status
-        issue.author = request.data['author']if 'author' in request.data.keys() else issue.author
-        issue.assignee = request.data['assignee']if 'assignee' in request.data.keys() else issue.assignee
+        issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
+        issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
+        issue.project = request.data['project'] if 'project' in request.data.keys() else issue.project
+        issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
+        issue.author = request.data['author'] if 'author' in request.data.keys() else issue.author
+        issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
 
         issue.save()
 
@@ -213,7 +212,7 @@ class SpecificIssueAPIView(APIView):
         Remove a contributor from a Project
         """
         issue_id = kwargs['id']
-        issue = self.find_issue(issue_id)   # pb si pas de correspondance !! à gérer
+        issue = self.find_issue(issue_id)  # pb si pas de correspondance !! à gérer
 
         issue.delete()
         serializer = self.serializer_class(issue)
@@ -273,7 +272,7 @@ class SpecificCommentAPIView(APIView):
         Updates a specific Comment on a issue by ID
         """
         comment_id = kwargs['id']
-        comment = self.find_comment(comment_id)   # pb si pas de correspondance !! à gérer
+        comment = self.find_comment(comment_id)  # pb si pas de correspondance !! à gérer
 
         comment.description = request.data['description'] \
             if 'description' in request.data.keys() else comment.description
@@ -290,7 +289,7 @@ class SpecificCommentAPIView(APIView):
         Deletes a specific Comment on a issue by ID
         """
         comment_id = kwargs['id']
-        comment = self.find_comment(comment_id)   # pb si pas de correspondance !! à gérer
+        comment = self.find_comment(comment_id)  # pb si pas de correspondance !! à gérer
 
         comment.delete()
         serializer = self.serializer_class(comment)
