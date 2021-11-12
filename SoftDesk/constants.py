@@ -2,7 +2,7 @@
 Constants used throughout the project
 """
 
-PROJECT_TYPES = [(1, 'Back-End'), (2, 'Front-End'), (3, 'iOS'), (4, 'Android')]
+PROJECT_TYPES = [('Back-End', 'Back-End'), ('Front-End', 'Front-End'), ('iOS', 'iOS'), ('Android', 'Android')]
 
 CONTRIBUTOR_ROLES = [(1, 'Creator'), (2, 'Manager'), (3, 'Author')]
 

@@ -10,7 +10,7 @@ class Project(models.Model):
     """
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=1024)
-    type = models.CharField(max_length=1, choices=PROJECT_TYPES)
+    type = models.CharField(max_length=10, choices=PROJECT_TYPES)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
