@@ -28,11 +28,22 @@ class Contributor(models.Model):
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    permission = models.CharField(max_length=128)  # choix à remplir
     role = models.CharField(max_length=1, choices=CONTRIBUTOR_ROLES)
 
     def __str__(self):
         return f'{self.user}: {self.role} for {self.project}'
+
+    objects = models.Manager()
+
+
+class Permissions(models.Model):
+    """
+    Model linked to Contributor setting permissions
+    """
+    role = models.ForeignKey(to=Contributor.role, on_delete=models.CASCADE)
+    creator = models.CharField(max_length=128)  # choix à remplir
+    manager = models.CharField(max_length=128)  # choix à remplir
+    author = models.CharField(max_length=128)  # choix à remplir
 
     objects = models.Manager()
 
