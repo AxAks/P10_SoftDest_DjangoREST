@@ -72,8 +72,8 @@ class ListUsersAPIView(ModelViewSet):
     """
 
     """
-    queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
     def get(self):

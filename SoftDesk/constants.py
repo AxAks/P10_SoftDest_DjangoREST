@@ -6,6 +6,6 @@ PROJECT_TYPES = [('Back-End', 'Back-End'), ('Front-End', 'Front-End'), ('iOS', '
 
 CONTRIBUTOR_ROLES = [('Creator', 'Creator'), ('Manager', 'Manager'), ('Author', 'Author')]
 
-ISSUE_TAGS = [(1, 'Bug'), (2, 'Feature'), (3, 'Task')]
-ISSUE_PRIORITIES = [(1, 'Low'), (2, 'Medium'), (3, 'High')]
-ISSUE_STATUSES = [(1, 'Todo'), (2, 'Handled'), (3,  'Closed')]
+ISSUE_TAGS = [('Bug', 'Bug'), ('Feature', 'Feature'), ('Task', 'Task')]
+ISSUE_PRIORITIES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')]
+ISSUE_STATUSES = [('Todo', 'Todo'), ('Handled', 'Handled'), ('Closed',  'Closed')]

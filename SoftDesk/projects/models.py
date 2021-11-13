@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import Permission
 from SoftDesk import settings
 from constants import PROJECT_TYPES, CONTRIBUTOR_ROLES, ISSUE_TAGS, ISSUE_STATUSES, ISSUE_PRIORITIES
 
@@ -28,7 +27,7 @@ class Contributor(models.Model):
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    role = models.CharField(max_length=1, choices=CONTRIBUTOR_ROLES)
+    role = models.CharField(max_length=10, choices=CONTRIBUTOR_ROLES)
 
     def __str__(self):
         return f'{self.user}: {self.role} for {self.project}'
@@ -36,16 +35,18 @@ class Contributor(models.Model):
     objects = models.Manager()
 
 
+"""
 class Permissions(models.Model):
-    """
-    Model linked to Contributor setting permissions
-    """
+"""
+# Model linked to Contributor setting permissions
+"""
     role = models.ForeignKey(to=Contributor.role, on_delete=models.CASCADE)
     creator = models.CharField(max_length=128)  # choix à remplir
     manager = models.CharField(max_length=128)  # choix à remplir
     author = models.CharField(max_length=128)  # choix à remplir
 
     objects = models.Manager()
+"""
 
 
 class Issue(models.Model):
@@ -54,10 +55,10 @@ class Issue(models.Model):
     """
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=1024)
-    tag = models.CharField(max_length=1 ,choices=ISSUE_TAGS)
-    priority = models.CharField(max_length=1, choices=ISSUE_PRIORITIES)
+    tag = models.CharField(max_length=10, choices=ISSUE_TAGS)
+    priority = models.CharField(max_length=10, choices=ISSUE_PRIORITIES)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    status = models.CharField(max_length=1, choices=ISSUE_STATUSES)
+    status = models.CharField(max_length=10, choices=ISSUE_STATUSES)
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_author',
                                on_delete=models.CASCADE)
     assignee = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_assignee',
