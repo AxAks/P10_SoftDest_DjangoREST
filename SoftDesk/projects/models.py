@@ -24,7 +24,7 @@ class Contributor(models.Model):
     """
     Model through linking users to projects
     """
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='project_contributor',
                              on_delete=models.CASCADE)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=CONTRIBUTOR_ROLES)

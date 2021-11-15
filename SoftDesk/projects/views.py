@@ -8,6 +8,7 @@ from projects.models import Project, Contributor, Issue, Comment
 from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
 from projects.lib_projects import find_obj
+from users.models import CustomUser
 
 
 class ProjectsAPIView(ListCreateAPIView):
@@ -23,7 +24,7 @@ class ProjectsAPIView(ListCreateAPIView):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = Project.objects.filter(author=user.id)
+        projects = Project.objects.all().filter(contributor=user.id) # Project.objects.filter(author=user.id)
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
@@ -39,6 +40,7 @@ class ProjectsAPIView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         project_obj = serializer.save()
         project_creator = Contributor.objects.create(user=user, project=project_obj, role='Creator')
+        project_creator.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -51,11 +53,14 @@ class SpecificProjectAPIView(APIView):
         """
         Returns a specific project by ID
         """
+        user = request.user
         project_id = kwargs['id']
         project = find_obj(Project, project_id)  # pb si pas de correspondance !! à gérer
-        serializer = self.serializer_class(project, many=True)
-
-        return Response(serializer.data) if serializer.data else Response("No projects to display")
+        if project in Project.objects.all().filter(contributor=user.id):
+            serializer = self.serializer_class(project, many=True)
+            return Response(serializer.data) if serializer.data else Response("No project to display")
+        else:
+            return Response('You do not have sufficient permissions,', status=status.HTTP_401_UNAUTHORIZED)
 
     def put(self, request, **kwargs):
         """
@@ -106,12 +111,22 @@ class ContributorAPIView(APIView):
         """
         Add a contributor to a given project
         """
-        contributor = request.data
-        serializer = self.serializer_class(data=contributor)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        current_user = request.user
+        project_id = kwargs['project']
+        is_project_contributor = Contributor.objects.filter(project=project_id).get(user=current_user.id)  # erreur si pas de match
+        if is_project_contributor and is_project_contributor.role in ('Creator', 'Manager'):
+            contributor = request.data
+            contributor_copy = contributor.copy()
+            contributor_copy['project'] = kwargs['project']
+            serializer = self.serializer_class(data=contributor_copy)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response('Unsufficient permissions. '
+                            'You must be the project creator or manager',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SpecificContributorAPIView(APIView):
