@@ -47,7 +47,7 @@ class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serial
             username = request.data['username']
             password = request.data['password']
 
-            user = CustomUser.objects.get(username=username)
+            user = CustomUser.objects.get(username=username)  # error non catché si pas de match !
             if user and check_password(password, user.password):
                 try:
                     payload = jwt_payload_handler(user)
