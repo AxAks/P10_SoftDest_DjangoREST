@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
@@ -9,14 +10,15 @@ from projects.serializers import ProjectSerializer, ContributorSerializer, Issue
 from projects.lib_projects import find_obj
 
 
-class ProjectsAPIView(APIView):
+class ProjectsAPIView(ListCreateAPIView):
     """
     The main endpoint for Projects
     """
-    permission_classes = (AllowAny,)  #  à changer pour IsAuthenticated
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
+    context = {}
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         """
         enables an authenticated user to list all the projects he is part of.
         """
@@ -25,14 +27,18 @@ class ProjectsAPIView(APIView):
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
         enables an authenticated user to create a new project
         """
         project = request.data
-        serializer = self.serializer_class(data=project)
+        user = request.user
+        project_copy = project.copy()
+        project_copy['author'] = user.id
+        serializer = self.serializer_class(data=project_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        project_obj = serializer.save()
+        project_creator = Contributor.objects.create(user=user, project=project_obj, role='Creator')
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
