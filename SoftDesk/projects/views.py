@@ -1,3 +1,5 @@
+from itertools import chain
+
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
@@ -24,7 +26,10 @@ class ProjectsAPIView(ListCreateAPIView):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = Project.objects.all().filter(contributor=user.id) # Project.objects.filter(author=user.id)
+        authored_projects = Project.objects.all().filter(author=user.id)
+        contributed_projects = Project.objects.all().filter(contributor__user=user.id) # Project.objects.filter(author=user.id)
+        projects = chain(authored_projects, contributed_projects)
+
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
@@ -39,7 +44,7 @@ class ProjectsAPIView(ListCreateAPIView):
         serializer = self.serializer_class(data=project_copy)
         serializer.is_valid(raise_exception=True)
         project_obj = serializer.save()
-        project_creator = Contributor.objects.create(user=user, project=project_obj, role='Creator')
+        project_creator = Contributor(user=user, project=project_obj, role='Creator') # ne rend pas contributor du projet ...?
         project_creator.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
