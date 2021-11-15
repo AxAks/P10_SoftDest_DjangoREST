@@ -134,7 +134,7 @@ class ContributorAPIView(APIView):
         project_id = kwargs['project']
         project = find_obj(Project, project_id)
         if project:
-            is_project_contributor = Contributor.objects.filter(project=project_id).get(user=current_user.id)  # erreur si pas de match
+            is_project_contributor = Contributor.objects.get(project=project_id, user=current_user.id)  # erreur si pas de match
             if is_project_contributor:
                 if is_project_contributor.role in ('Creator', 'Manager'):
                     contributor = request.data
