@@ -28,7 +28,7 @@ class ProjectsAPIView(ListCreateAPIView):
         """
         user = request.user
         authored_projects = self.queryset.filter(author=user.id)
-        contributed_projects = Project.objects.all().filter(contributor__user=user.id)
+        contributed_projects = self.queryset.filter(contributor__user=user.id)
         projects = sorted(chain(authored_projects, contributed_projects), key=lambda project: project.id)
 
         serializer = self.serializer_class(projects, many=True)
