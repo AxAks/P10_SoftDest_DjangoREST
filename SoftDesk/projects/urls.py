@@ -14,7 +14,7 @@ urlpatterns = [
         }
     )),
     path('<int:id_project>', SpecificProjectModelViewSet.as_view({
-            'get': 'list',
+            'get': 'retrieve',
             'put': 'update',
             'delete': 'destroy'
         })),
@@ -23,7 +23,7 @@ urlpatterns = [
             'post': 'create'
         })),
     path('<int:id_project>/users/<int:id_user>', SpecificContributorModelViewSet.as_view({
-            'get': 'list',
+            'get': 'retrieve',
             'delete': 'destroy'
         })),
     path('<int:id_project>/issues/', IssueAPIView.as_view()),

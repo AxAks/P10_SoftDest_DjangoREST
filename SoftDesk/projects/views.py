@@ -1,5 +1,3 @@
-from itertools import chain
-
 from django.shortcuts import get_list_or_404
 from rest_framework import status
 from rest_framework.response import Response
@@ -28,9 +26,7 @@ class ProjectsModelViewSet(ModelViewSet):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        authored_projects = self.queryset.filter(author=user.id)
-        contributed_projects = self.queryset.filter(contributor__user=user.id)
-        projects = sorted(chain(authored_projects, contributed_projects), key=lambda project: project.id)
+        projects = self.queryset.filter(contributor__user=user.id)
 
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
@@ -57,7 +53,7 @@ class SpecificProjectModelViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
-    def list(self, request, **kwargs):
+    def retrieve(self, request, **kwargs):
         """
         Returns a specific project by ID
         """
@@ -68,22 +64,20 @@ class SpecificProjectModelViewSet(ModelViewSet):
 
     def update(self, request, **kwargs): # à revoir pour faire un truc propre + seul les manager ou creator peuvent updater!
         """
-        Enables the user to update the information of a specific project
+        # Enables the user to update the information of a specific project
         """
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
-        if project:
-            project.title = request.data['title'] if 'title' in request.data.keys() else project.title
-            project.description = request.data['description'] \
-                if 'description' in request.data.keys() else project.description
-            project.type = request.data['type'] if 'type' in request.data.keys() else project.type
 
-            project.save()
+        project.title = request.data['title'] if 'title' in request.data.keys() else project.title
+        project.description = request.data['description'] \
+            if 'description' in request.data.keys() else project.description
+        project.type = request.data['type'] if 'type' in request.data.keys() else project.type
 
-            serializer = self.serializer_class(project)
-            return Response(serializer.data)
-        else:
-            return Response('No project to display,', status=status.HTTP_404_NOT_FOUND)
+        project.save()
+
+        serializer = self.serializer_class(project)
+        return Response(serializer.data)
 
     def destroy(self, **kwargs): # seul projects managers et creator !!
         """
@@ -151,7 +145,7 @@ class SpecificContributorModelViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     serializer_class = ContributorSerializer
 
-    def list(self, request, **kwargs):
+    def retrieve(self, request, **kwargs):
         """
         Returns a specific contributor to a project by the user's ID
         """
@@ -169,11 +163,8 @@ class SpecificContributorModelViewSet(ModelViewSet):
         """
         contributor_id = kwargs['id_user']
         project_id = kwargs['id_project']
-        try:
-            contributor = get_object_or_404(Contributor.objects.get(project_id=project_id, user_id=contributor_id)) # pb si pas de correspondance !! à gérer
-            contributor.delete()
-        except Contributor.DoesNotExist :
-            raise Exception(e)
+        contributor = get_object_or_404(Contributor.objects.get(project_id=project_id, user_id=contributor_id)) # pb si pas de correspondance !! à gérer
+        contributor.delete()
         serializer = self.serializer_class(contributor)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -291,7 +282,7 @@ class SpecificCommentAPIView(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = CommentSerializer
 
-    def get(self, request, **kwargs):
+    def retrieve(self, request, **kwargs):
         """
         Returns a specific Comment on a issue by ID
         """
