@@ -1,10 +1,14 @@
 from django.urls import path
-from users.views import CreateUserAPIView, AuthenticationAPIView, ListUsersAPIView
+from users.views import CreateUserModelViewSet, AuthenticationAPIView, ListUsersModelViewSet
 
 app_name = "users"
 
 urlpatterns = [
-    path('signup', CreateUserAPIView.as_view()),
+    path('signup', CreateUserModelViewSet.as_view({
+        'post': 'create'
+    })),
     path('login', AuthenticationAPIView.as_view()),
-    path('users', ListUsersAPIView.as_view({'get': 'list'}))  # test à retirer ensuite peut-etre
+    path('users', ListUsersModelViewSet.as_view({
+        'get': 'list'
+    }))  # test à retirer ensuite peut-etre
 ]

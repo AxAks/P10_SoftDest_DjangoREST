@@ -2,6 +2,7 @@ import jwt
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,22 +14,13 @@ from users.models import CustomUser
 from users.serializers import UserSerializer
 
 
-class CreateUserAPIView(APIView):
+class CreateUserModelViewSet(ModelViewSet):
     """
-
+    Endpoint to create a user
     """
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
-
-    def post(self, request):
-        """
-        Enables the user to send their infos to register
-        """
-        user = request.data
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    pass
 
 
 class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
@@ -39,7 +31,7 @@ class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serial
     serializer_class = UserSerializer  # pas utilisé ici
 
     @staticmethod
-    def post(request):
+    def post(request, *args, **kwargs):
         """
         Enables the user to send their infos to login
         """
@@ -47,7 +39,7 @@ class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serial
             username = request.data['username']
             password = request.data['password']
 
-            user = CustomUser.objects.get(username=username)  # error non catché si pas de match !
+            user = get_object_or_404(CustomUser.objects.filter(username=username))  # error non catché si pas de match !
             if user and check_password(password, user.password):
                 try:
                     payload = jwt_payload_handler(user)
@@ -68,16 +60,11 @@ class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serial
             return Response(res)
 
 
-class ListUsersAPIView(ModelViewSet):
+class ListUsersModelViewSet(ModelViewSet):
     """
-
+    Enables an authenticated user to list all other registered users
     """
     permission_classes = (IsAuthenticated,)
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-
-    def get(self):
-        """
-        Enables an authenticated user to list all other registered users
-        """
-        return Response(self.queryset) if self.queryset else Response("No users to display")
+    pass

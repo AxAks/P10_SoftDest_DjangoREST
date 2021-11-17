@@ -9,9 +9,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['title', 'description', 'type', 'author']
 
-    def create(self, validated_data):
-        return Project.objects.create(**validated_data)
-
 
 class ContributorSerializer(serializers.ModelSerializer):
 

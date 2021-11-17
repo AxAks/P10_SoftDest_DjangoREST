@@ -1,9 +1,10 @@
 from itertools import chain
 
+from django.shortcuts import get_list_or_404
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -14,7 +15,7 @@ from projects.lib_projects import find_obj
 from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor, IsIssueAuthor, IsCommentAuthor
 
 
-class ProjectsAPIView(ModelViewSet):
+class ProjectsModelViewSet(ModelViewSet):
     """
     The main endpoint for Projects
     """
@@ -51,39 +52,26 @@ class ProjectsAPIView(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class SpecificProjectAPIView(APIView):
-    permission_classes = (IsAuthenticated, )  # à changer pour IsAuthenticated
+class SpecificProjectModelViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated, IsProjectContributor,)
     serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
 
-    # à transformer en ModelViewSet
-    """ 
-    def get_queryset(self, **kwargs):
-        project_id = kwargs['id']
-        return Project.objects.filter(id=project_id)
-    """
-
-    def get(self, request, **kwargs):
+    def list(self, request, **kwargs):
         """
         Returns a specific project by ID
         """
-        user = request.user
-        project_id = kwargs['id']
-        project = Project.objects.filter(id=project_id)
-        if project:
-            if Project.objects.filter(id=project_id, contributor__user_id=user.id).exists():  # IsProjectContrib !
-                serializer = self.serializer_class(project, many=True)
-                return Response(serializer.data)
-            else:
-                return Response('You do not have sufficient permissions,', status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return Response('No project to display,', status=status.HTTP_404_NOT_FOUND)
+        project_id = kwargs['id_project']
+        project = find_obj(Project, project_id)
+        serializer = self.serializer_class(project)
+        return Response(serializer.data)
 
-    def put(self, request, **kwargs):
+    def update(self, request, **kwargs): # à revoir pour faire un truc propre + seul les manager ou creator peuvent updater!
         """
         Enables the user to update the information of a specific project
         """
-        project_id = kwargs['id']
-        project = Project.objects.filter(project_id=project_id)  # pb si pas de correspondance !! à gérer
+        project_id = kwargs['id_project']
+        project = find_obj(Project, project_id)
         if project:
             project.title = request.data['title'] if 'title' in request.data.keys() else project.title
             project.description = request.data['description'] \
@@ -97,55 +85,50 @@ class SpecificProjectAPIView(APIView):
         else:
             return Response('No project to display,', status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request, **kwargs):
+    def destroy(self, **kwargs): # seul projects managers et creator !!
         """
         Enables the user to delete a given project and all related issues
         """
-        project_id = kwargs['id']
-        project = find_obj(Project, project_id)  # pb si pas de correspondance !! à gérer
-
+        project_id = kwargs['id_project']
+        project = find_obj(Project, project_id)
         project.delete()
         serializer = self.serializer_class(project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
-class ContributorAPIView(APIView):
+class ContributorModelViewSet(ModelViewSet):
     """
     Main end point for contributors
     """
-    permission_classes = (IsAuthenticated, IsProjectCreator)
+    permission_classes = (IsAuthenticated, IsProjectContributor)
     serializer_class = ContributorSerializer
+    queryset = Contributor.objects.all()
 
-    def get(self, request, **kwargs):
+    def list(self, request, **kwargs):
         """
         List all contributors of a given project
         """
-        project_id = kwargs['project']
-        project = find_obj(Project, project_id)
-        if project:
-            contributors = Contributor.objects.filter(project_id=project_id)
-            if contributors:
-                serializer = self.serializer_class(contributors, many=True)
-                return Response({'contributors': serializer.data})
-            else:
-                return Response("No contributors to display", status=status.HTTP_404_NOT_FOUND)
-        else:
-            return Response('No matching project to display', status=status.HTTP_404_NOT_FOUND)
+        project_id = kwargs['id_project']
+        find_obj(Project, project_id)
+        contributors = get_list_or_404(self.queryset.filter(project_id=project_id))
+        serializer = self.serializer_class(contributors, many=True)
+        return Response({'contributors': serializer.data})
 
-    def post(self, request, **kwargs):
+    def create(self, request, **kwargs):
         """
         Add a contributor to a given project
         """
+        perms = (IsProjectCreator,)  # voir comment mettre en place
         current_user = request.user
-        project_id = kwargs['project']
+        project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
         if project:
-            is_project_contributor = Contributor.objects.get(project=project_id, user=current_user.id)  # erreur si pas de match
+            is_project_contributor = Contributor.objects.filter(project=project_id, user=current_user.id).exists()  # erreur si pas de match
             if is_project_contributor:
                 if is_project_contributor.role in ('Creator', 'Manager'):
                     contributor = request.data
                     contributor_copy = contributor.copy()
-                    contributor_copy['project'] = kwargs['project']
+                    contributor_copy['id_project'] = kwargs['id_project']
                     serializer = self.serializer_class(data=contributor_copy)
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
@@ -161,31 +144,36 @@ class ContributorAPIView(APIView):
             return Response('No matching project to display', status=status.HTTP_404_NOT_FOUND)
 
 
-class SpecificContributorAPIView(APIView):
+class SpecificContributorModelViewSet(ModelViewSet):
     """
     End point for Specific contributor
     """
     permission_classes = (IsAuthenticated,)
     serializer_class = ContributorSerializer
 
-    def get(self, request, **kwargs):
+    def list(self, request, **kwargs):
         """
         Returns a specific contributor to a project by the user's ID
         """
         contributor_id = kwargs['id']
-        contributor = find_obj(Contributor, contributor_id)  # pb si pas de correspondance !! à gérer
+        try:
+            contributor = find_obj(Contributor, contributor_id)  # pb si pas de correspondance !! à gérer
+        except Exception as e:
+            raise Exception(e)
         serializer = self.serializer_class(contributor)
         return Response(serializer.data) if serializer.data else Response("No project to display")
 
-    def delete(self, request, **kwargs):
+    def destroy(self, request, **kwargs):
         """
         remove users from a given project
         """
         contributor_id = kwargs['id_user']
-        project_id = kwargs['project']
-        contributor = Contributor.objects.get(project_id=project_id, user_id=contributor_id) # pb si pas de correspondance !! à gérer
-
-        contributor.delete()
+        project_id = kwargs['id_project']
+        try:
+            contributor = get_object_or_404(Contributor.objects.get(project_id=project_id, user_id=contributor_id)) # pb si pas de correspondance !! à gérer
+            contributor.delete()
+        except Contributor.DoesNotExist :
+            raise Exception(e)
         serializer = self.serializer_class(contributor)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -201,7 +189,7 @@ class IssueAPIView(APIView):
         """
         Lists all issue of a given project
         """
-        issues = Contributor.objects.filter(project=kwargs['project'])
+        issues = Contributor.objects.filter(project=kwargs['id_project'])
         serializer = self.serializer_class(issues, many=True)
         return Response({'contributors': serializer.data}) if serializer.data \
             else Response("No issues to display")
@@ -246,7 +234,7 @@ class SpecificIssueAPIView(APIView):
             if 'description' in request.data.keys() else issue.description
         issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
         issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
-        issue.project = request.data['project'] if 'project' in request.data.keys() else issue.project
+        issue.project = request.data['id_project'] if 'id_project' in request.data.keys() else issue.project
         issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
         issue.author = request.data['author'] if 'author' in request.data.keys() else issue.author
         issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
