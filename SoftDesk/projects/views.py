@@ -14,7 +14,7 @@ from projects.lib_projects import find_obj
 from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor, IsIssueAuthor, IsCommentAuthor
 
 
-class ProjectsAPIView(ListCreateAPIView):
+class ProjectsAPIView(ModelViewSet):
     """
     The main endpoint for Projects
     """
@@ -22,7 +22,7 @@ class ProjectsAPIView(ListCreateAPIView):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         """
         enables an authenticated user to list all the projects he is part of.
         """
@@ -34,7 +34,7 @@ class ProjectsAPIView(ListCreateAPIView):
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         """
         enables an authenticated user to create a new project
         """
@@ -54,7 +54,13 @@ class ProjectsAPIView(ListCreateAPIView):
 class SpecificProjectAPIView(APIView):
     permission_classes = (IsAuthenticated, )  # à changer pour IsAuthenticated
     serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
+
+    # à transformer en ModelViewSet
+    """ 
+    def get_queryset(self, **kwargs):
+        project_id = kwargs['id']
+        return Project.objects.filter(id=project_id)
+    """
 
     def get(self, request, **kwargs):
         """
@@ -62,9 +68,9 @@ class SpecificProjectAPIView(APIView):
         """
         user = request.user
         project_id = kwargs['id']
-        project = self.queryset.filter(id=project_id)
+        project = Project.objects.filter(id=project_id)
         if project:
-            if self.queryset.filter(id=project_id, contributor__user_id=user.id).exists():  # IsProjectContrib !
+            if Project.objects.filter(id=project_id, contributor__user_id=user.id).exists():  # IsProjectContrib !
                 serializer = self.serializer_class(project, many=True)
                 return Response(serializer.data)
             else:
@@ -77,7 +83,7 @@ class SpecificProjectAPIView(APIView):
         Enables the user to update the information of a specific project
         """
         project_id = kwargs['id']
-        project = self.queryset.filter(project_id=project_id)  # pb si pas de correspondance !! à gérer
+        project = Project.objects.filter(project_id=project_id)  # pb si pas de correspondance !! à gérer
         if project:
             project.title = request.data['title'] if 'title' in request.data.keys() else project.title
             project.description = request.data['description'] \
@@ -107,7 +113,7 @@ class ContributorAPIView(APIView):
     """
     Main end point for contributors
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsProjectCreator)
     serializer_class = ContributorSerializer
 
     def get(self, request, **kwargs):
@@ -164,7 +170,7 @@ class SpecificContributorAPIView(APIView):
 
     def get(self, request, **kwargs):
         """
-        Returns a specific contributor to a project by ID
+        Returns a specific contributor to a project by the user's ID
         """
         contributor_id = kwargs['id']
         contributor = find_obj(Contributor, contributor_id)  # pb si pas de correspondance !! à gérer
@@ -175,8 +181,9 @@ class SpecificContributorAPIView(APIView):
         """
         remove users from a given project
         """
-        contributor_id = kwargs['id']
-        contributor = find_obj(Contributor, contributor_id)  # pb si pas de correspondance !! à gérer
+        contributor_id = kwargs['id_user']
+        project_id = kwargs['project']
+        contributor = Contributor.objects.get(project_id=project_id, user_id=contributor_id) # pb si pas de correspondance !! à gérer
 
         contributor.delete()
         serializer = self.serializer_class(contributor)
