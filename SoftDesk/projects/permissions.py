@@ -44,7 +44,7 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        project_id = view.kwargs['project']
+        project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
 
 

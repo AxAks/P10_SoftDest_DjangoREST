@@ -112,31 +112,21 @@ class ContributorModelViewSet(ModelViewSet):
         """
         Add a contributor to a given project
         """
-        perms = (IsProjectCreator,)  # voir comment mettre en place
         current_user = request.user
         project_id = kwargs['id_project']
-        project = find_obj(Project, project_id)
-        if project:
-            is_project_contributor = Contributor.objects.filter(project=project_id, user=current_user.id).exists()  # erreur si pas de match
-            if is_project_contributor:
-                if is_project_contributor.role in ('Creator', 'Manager'):
-                    contributor = request.data
-                    contributor_copy = contributor.copy()
-                    contributor_copy['id_project'] = kwargs['id_project']
-                    serializer = self.serializer_class(data=contributor_copy)
-                    serializer.is_valid(raise_exception=True)
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                else:
-                    return Response('Insufficient permissions. '
-                                    'You must be the project creator or manager',
-                                    status=status.HTTP_401_UNAUTHORIZED)
-            else:
-                return Response('Insufficient permissions. You are not a contributor to this project',
-                                status=status.HTTP_401_UNAUTHORIZED)
+        find_obj(Project, project_id)
+        if IsProjectCreator or IsProjectManager:
+            contributor = request.data
+            contributor_copy = contributor.copy()
+            contributor_copy['project'] = project_id
+            serializer = self.serializer_class(data=contributor_copy)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response('No matching project to display', status=status.HTTP_404_NOT_FOUND)
-
+            return Response('Insufficient permissions. '
+                            'You must be the project creator or manager',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
 class SpecificContributorModelViewSet(ModelViewSet):
     """
