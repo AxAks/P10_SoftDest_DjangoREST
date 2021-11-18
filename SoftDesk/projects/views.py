@@ -122,7 +122,7 @@ class ContributorModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         find_obj(Project, project_id)
-        if IsProjectCreator or IsProjectManager:
+        if IsProjectCreator or IsProjectManager: # ne fonctionne pas !!!
             contributor = request.data
             contributor_copy = contributor.copy()
             contributor_copy['project'] = project_id
