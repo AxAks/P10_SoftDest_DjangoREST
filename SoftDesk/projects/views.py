@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from projects.models import Project, Contributor, Issue, Comment
@@ -17,7 +16,7 @@ class ProjectsModelViewSet(ModelViewSet):
     """
     The main endpoint for Projects
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
@@ -47,12 +46,6 @@ class ProjectsModelViewSet(ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-class SpecificProjectModelViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated, IsProjectContributor,)
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
-
     def retrieve(self, request, **kwargs):
         """
         Returns a specific project by ID
@@ -62,22 +55,25 @@ class SpecificProjectModelViewSet(ModelViewSet):
         serializer = self.serializer_class(project)
         return Response(serializer.data)
 
-    def update(self, request, **kwargs): # à revoir pour faire un truc propre + seul les manager ou creator peuvent updater!
+    def update(self, request, **kwargs):
         """
         # Enables the user to update the information of a specific project
         """
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
+        if IsProjectCreator or IsProjectManager:
+            project.title = request.data['title'] if 'title' in request.data.keys() else project.title
+            project.description = request.data['description'] \
+                if 'description' in request.data.keys() else project.description
+            project.type = request.data['type'] if 'type' in request.data.keys() else project.type
 
-        project.title = request.data['title'] if 'title' in request.data.keys() else project.title
-        project.description = request.data['description'] \
-            if 'description' in request.data.keys() else project.description
-        project.type = request.data['type'] if 'type' in request.data.keys() else project.type
-
-        project.save()
-
-        serializer = self.serializer_class(project)
-        return Response(serializer.data)
+            project.save()
+            serializer = self.serializer_class(project)
+            return Response(serializer.data)
+        else:
+            return Response('Insufficient permissions. '
+                            'You must be the project creator or manager',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, **kwargs): # seul projects managers et creator !!
         """
@@ -85,16 +81,21 @@ class SpecificProjectModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
-        project.delete()
-        serializer = self.serializer_class(project)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if IsProjectCreator or IsProjectManager:
+            project.delete()
+            serializer = self.serializer_class(project)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response('Insufficient permissions. '
+                            'You must be the project creator or manager',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
 
 class ContributorModelViewSet(ModelViewSet):
     """
     Main end point for contributors
     """
-    permission_classes = (IsAuthenticated, IsProjectContributor,)
+    permission_classes = (IsProjectContributor, )
     serializer_class = ContributorSerializer
     queryset = Contributor.objects.all()
 
@@ -127,22 +128,14 @@ class ContributorModelViewSet(ModelViewSet):
                             'You must be the project creator or manager',
                             status=status.HTTP_401_UNAUTHORIZED)
 
-
-class SpecificContributorModelViewSet(ModelViewSet):
-    """
-    End point for Specific contributor
-    """
-    permission_classes = (IsAuthenticated, IsProjectContributor)
-    serializer_class = ContributorSerializer
-    queryset = Contributor.objects.all()
-
     def retrieve(self, request, **kwargs):
         """
         Returns a specific contributor to a project by the user's ID
         """
         project_id = kwargs['id_project']
+        project = get_object_or_404(find_obj(Project, project_id))
         contributor_id = kwargs['id_user']
-        contributor = get_object_or_404(Contributor.objects.filter(project_id=project_id, user_id=contributor_id))
+        contributor = get_object_or_404(Contributor.objects.filter(project=project, user_id=contributor_id))
         serializer = self.serializer_class(contributor)
         return Response(serializer.data)
 
@@ -162,7 +155,7 @@ class IssueModelViewSet(ModelViewSet):
     """
     Main end point for issues
     """
-    permission_classes = (IsAuthenticated, IsProjectContributor,)
+    permission_classes = (IsProjectContributor,)
     serializer_class = IssueSerializer
     queryset = Issue.objects.all()
 
@@ -170,10 +163,9 @@ class IssueModelViewSet(ModelViewSet):
         """
         Lists all issue of a given project
         """
-        issues = Contributor.objects.filter(project=kwargs['id_project'])
+        issues = get_list_or_404(Issue.objects.filter(project=kwargs['id_project']))
         serializer = self.serializer_class(issues, many=True)
-        return Response({'contributors': serializer.data}) if serializer.data \
-            else Response("No issues to display")
+        return Response({'issues': serializer.data})
 
     def create(self, request, **kwargs):
         """
@@ -183,132 +175,129 @@ class IssueModelViewSet(ModelViewSet):
         user = request.user
         issue = request.data
         issue_copy = issue.copy()
-        issue_copy['author'] = user.id
-        issue_copy['project'] = project
+        issue_copy['author'], issue_copy['project'] = user.id, project
         serializer = self.serializer_class(data=issue_copy)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-class SpecificIssueAPIView(APIView):
-    """
-    End point for Specific issue
-    """
-    permission_classes = (IsAuthenticated,)
-    serializer_class = IssueSerializer
-
-    def get(self, request, **kwargs):
+    def retrieve(self, request, **kwargs):
         """
         Returns a specific issue by ID
         """
-        issue_id = kwargs['id']
+        issue_id = kwargs['id_issue']
         issue = find_obj(Issue, issue_id)  # pb si pas de correspondance !! à gérer
         serializer = self.serializer_class(issue)
         return Response(serializer.data) if serializer.data else Response("No issue to display")
 
-    def put(self, request, **kwargs):
+    def update(self, request, **kwargs):
         """
         Updates a specific issue
         """
-        issue_id = kwargs['id']
-        issue = find_obj(Issue, issue_id)   # pb si pas de correspondance !! à gérer
+        issue_id = kwargs['id_issue']
+        issue = get_object_or_404(find_obj(Issue, issue_id))
+        if IsIssueAuthor:
+            issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
+            issue.description = request.data['description'] \
+                if 'description' in request.data.keys() else issue.description
+            issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
+            issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
+            issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
+            issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
 
-        issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
-        issue.description = request.data['description'] \
-            if 'description' in request.data.keys() else issue.description
-        issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
-        issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
-        issue.project = request.data['id_project'] if 'id_project' in request.data.keys() else issue.project
-        issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
-        issue.author = request.data['author'] if 'author' in request.data.keys() else issue.author
-        issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
+            issue.save()
+            serializer = self.serializer_class(issue)
+            return Response(serializer.data)
+        else:
+            return Response('Insufficient permissions. You must be the Issue Author',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-        issue.save()
-
-        serializer = self.serializer_class(issue)
-        return Response(serializer.data)
-
-    def delete(self, request, **kwargs):
+    def destroy(self, request, **kwargs):
         """
         Remove a contributor from a Project
         """
-        issue_id = kwargs['id']
-        issue = find_obj(Issue, issue_id)   # pb si pas de correspondance !! à gérer
+        issue_id = kwargs['id_issue']
+        issue = get_object_or_404(find_obj(Issue, issue_id))   # pb si pas de correspondance !! à gérer
+        if IsIssueAuthor:
+            issue.delete()
+            serializer = self.serializer_class(issue)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response('Insufficient permissions. You must be the Issue Author',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-        issue.delete()
-        serializer = self.serializer_class(issue)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
-
-class CommentAPIView(APIView):
+class CommentModelViewSet(ModelViewSet):
     """
     Main end point for comments
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsProjectContributor, )
     serializer_class = CommentSerializer
+    queryset = Comment.objects.all()
 
-    def get(self, request, **kwargs):
+    def list(self, request, **kwargs):
         """
         Lists all comments on a project related issue
         """
-        comments = Comment.objects.filter(issue=kwargs['issue'])
+        project = get_object_or_404(Project.objects.filter(id=kwargs['id_project']))
+        issue = get_object_or_404(Issue.objects.filter(project=project))
+        comments = get_list_or_404(Comment.objects.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
-        return Response({'comments': serializer.data}) if serializer.data \
-            else Response("No comments to display")
+        return Response({'comments': serializer.data})
 
-    def post(self, request, **kwargs):
+    def create(self, request, **kwargs):
         """
         Add a comment to a project-related issue
         """
+        user = request.user
+        project = get_object_or_404(Project.objects.filter(id=kwargs['id_project']))
+        issue = get_object_or_404(Issue.objects.filter(project=project))
         comment = request.data
-        serializer = self.serializer_class(data=comment)
+        comment_copy = comment.copy()
+        comment_copy['author'], comment_copy['project'], comment_copy['issue'] = user.id, project.id, issue.id
+        serializer = self.serializer_class(data=comment_copy)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class SpecificCommentAPIView(APIView):
-    """
-    End point for Specific comment
-    """
-    permission_classes = (IsAuthenticated,)
-    serializer_class = CommentSerializer
 
     def retrieve(self, request, **kwargs):
         """
         Returns a specific Comment on a issue by ID
         """
-        comment_id = kwargs['id']
-        comment = find_obj(Comment, comment_id)  # pb si pas de correspondance !! à gérer
-        serializer = self.serializer_class(comment)
-        return Response(serializer.data) if serializer.data else Response("No comment to display")
-
-    def put(self, request, **kwargs):
-        """
-        Updates a specific Comment on a issue by ID
-        """
-        comment_id = kwargs['id']
-        comment = find_obj(Comment, comment_id)   # pb si pas de correspondance !! à gérer
-
-        comment.description = request.data['description'] \
-            if 'description' in request.data.keys() else comment.description
-        comment.author = request.data['author'] if 'author' in request.data.keys() else comment.author
-        comment.issue = request.data['issue'] if 'issue' in request.data.keys() else comment.issue
-
-        comment.save()
-
+        comment_id = kwargs['id_comment']
+        comment = find_obj(Comment, comment_id)
         serializer = self.serializer_class(comment)
         return Response(serializer.data)
 
-    def delete(self, request, **kwargs):
+    def update(self, request, **kwargs):
+        """
+        Updates a specific Comment on a issue by ID
+        """
+        comment_id = kwargs['id_comment']
+        comment = find_obj(Comment, comment_id)
+        if IsCommentAuthor:
+            comment.description = request.data['description'] \
+                if 'description' in request.data.keys() else comment.description
+
+            comment.save()
+            serializer = self.serializer_class(comment)
+            return Response(serializer.data)
+        else:
+            return Response('Insufficient permissions. '
+                            'You must be the comment author',
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+    def destroy(self, request, **kwargs):
         """
         Deletes a specific Comment on a issue by ID
         """
-        comment_id = kwargs['id']
-        comment = find_obj(Comment, comment_id)   # pb si pas de correspondance !! à gérer
-
-        comment.delete()
-        serializer = self.serializer_class(comment)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        comment_id = kwargs['id_comment']
+        comment = find_obj(Comment, comment_id)
+        if IsCommentAuthor:
+            comment.delete()
+            serializer = self.serializer_class(comment)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response('Insufficient permissions. '
+                            'You must be the comment author',
+                            status=status.HTTP_401_UNAUTHORIZED)
