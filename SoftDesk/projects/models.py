@@ -35,20 +35,6 @@ class Contributor(models.Model):
     objects = models.Manager()
 
 
-"""
-class Permissions(models.Model):
-"""
-# Model linked to Contributor setting permissions
-"""
-    role = models.ForeignKey(to=Contributor.role, on_delete=models.CASCADE)
-    creator = models.CharField(max_length=128)  # choix à remplir
-    manager = models.CharField(max_length=128)  # choix à remplir
-    author = models.CharField(max_length=128)  # choix à remplir
-
-    objects = models.Manager()
-"""
-
-
 class Issue(models.Model):
     """
     Model for the project-related issues
@@ -62,7 +48,7 @@ class Issue(models.Model):
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_author',
                                on_delete=models.CASCADE)
     assignee = models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='issue_assignee',
-                                 on_delete=models.CASCADE)
+                                 blank=True, null=True, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager()

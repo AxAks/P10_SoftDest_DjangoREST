@@ -94,7 +94,7 @@ class ContributorModelViewSet(ModelViewSet):
     """
     Main end point for contributors
     """
-    permission_classes = (IsAuthenticated, IsProjectContributor)
+    permission_classes = (IsAuthenticated, IsProjectContributor,)
     serializer_class = ContributorSerializer
     queryset = Contributor.objects.all()
 
@@ -132,41 +132,41 @@ class SpecificContributorModelViewSet(ModelViewSet):
     """
     End point for Specific contributor
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsProjectContributor)
     serializer_class = ContributorSerializer
+    queryset = Contributor.objects.all()
 
     def retrieve(self, request, **kwargs):
         """
         Returns a specific contributor to a project by the user's ID
         """
-        contributor_id = kwargs['id']
-        try:
-            contributor = find_obj(Contributor, contributor_id)  # pb si pas de correspondance !! à gérer
-        except Exception as e:
-            raise Exception(e)
+        project_id = kwargs['id_project']
+        contributor_id = kwargs['id_user']
+        contributor = get_object_or_404(Contributor.objects.filter(project_id=project_id, user_id=contributor_id))
         serializer = self.serializer_class(contributor)
-        return Response(serializer.data) if serializer.data else Response("No project to display")
+        return Response(serializer.data)
 
     def destroy(self, request, **kwargs):
         """
         remove users from a given project
         """
-        contributor_id = kwargs['id_user']
         project_id = kwargs['id_project']
+        contributor_id = kwargs['id_user']
         contributor = get_object_or_404(Contributor.objects.get(project_id=project_id, user_id=contributor_id)) # pb si pas de correspondance !! à gérer
         contributor.delete()
         serializer = self.serializer_class(contributor)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
-class IssueAPIView(APIView):
+class IssueModelViewSet(ModelViewSet):
     """
     Main end point for issues
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsProjectContributor,)
     serializer_class = IssueSerializer
+    queryset = Issue.objects.all()
 
-    def get(self, request, **kwargs):
+    def list(self, request, **kwargs):
         """
         Lists all issue of a given project
         """
@@ -175,15 +175,19 @@ class IssueAPIView(APIView):
         return Response({'contributors': serializer.data}) if serializer.data \
             else Response("No issues to display")
 
-    def post(self, request, **kwargs):
+    def create(self, request, **kwargs):
         """
         Adds an issue to a given project
         """
+        project = kwargs['id_project']
+        user = request.user
         issue = request.data
-        serializer = self.serializer_class(data=issue)
+        issue_copy = issue.copy()
+        issue_copy['author'] = user.id
+        issue_copy['project'] = project
+        serializer = self.serializer_class(data=issue_copy)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
