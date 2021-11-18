@@ -1,29 +1,5 @@
 """
-draft
-
-
-AllowAny:
-- Users Signup
-- Users Create
-
-IsAuthenticated:
-- Project : post/create
-- Issue
-- Comment
-
-Is(Project)Creator/Manager:
-- Contributor : post/ create (add)
-
-
-Is(Project)Contributor:
-- Project : list/get
-- Contributors : List/ get
-- Issue : list / get, post/ create (add)
-- Comment : list /get, post/create (add)
-
-IsAuthor:
-- Issue : put/update, delete
-- Comment put/update, delete
+This File sets Customs Authaurization and Access Permissions to Models
 """
 
 from rest_framework import permissions
@@ -61,13 +37,13 @@ class IsProjectManager(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        project_id = view.kwargs['project']
+        project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
 
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
     perms_map = {
-        'GET': [],
+        'GET': ['projects.list_projects'],
         'OPTIONS': [],
         'HEAD': [],
         'POST': ['projects.add_projects'],

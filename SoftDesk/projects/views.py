@@ -1,20 +1,22 @@
-from django.shortcuts import get_list_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
+from django.shortcuts import get_list_or_404
+
 from projects.models import Project, Contributor, Issue, Comment
+from projects.lib_projects import find_obj
 from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
-from projects.lib_projects import find_obj
-from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor, IsIssueAuthor, IsCommentAuthor
+from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor,\
+    IsIssueAuthor, IsCommentAuthor
 
 
 class ProjectsModelViewSet(ModelViewSet):
     """
-    The main endpoint for Projects
+    Endpoint for Projects
     """
     permission_classes = (IsAuthenticated, )
     serializer_class = ProjectSerializer
@@ -25,10 +27,10 @@ class ProjectsModelViewSet(ModelViewSet):
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = self.queryset.filter(contributor__user=user.id)
+        projects = get_list_or_404(self.queryset.filter(contributor__user=user.id))
 
         serializer = self.serializer_class(projects, many=True)
-        return Response({'projects': serializer.data}) if serializer.data else Response("No projects to display")
+        return Response({'projects': serializer.data})
 
     def create(self, request, *args, **kwargs):
         """
@@ -52,8 +54,13 @@ class ProjectsModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
-        serializer = self.serializer_class(project)
-        return Response(serializer.data)
+        if IsProjectContributor:   # pb marche pas, voir pourquoi !
+            serializer = self.serializer_class(project)
+            return Response(serializer.data)
+        else:
+            return Response('Insufficient permissions. '
+                            'You must be a contributor to the project',
+                            status=status.HTTP_401_UNAUTHORIZED)
 
     def update(self, request, **kwargs):
         """
@@ -93,7 +100,7 @@ class ProjectsModelViewSet(ModelViewSet):
 
 class ContributorModelViewSet(ModelViewSet):
     """
-    Main end point for contributors
+    End point for contributors
     """
     permission_classes = (IsProjectContributor, )
     serializer_class = ContributorSerializer
@@ -153,7 +160,7 @@ class ContributorModelViewSet(ModelViewSet):
 
 class IssueModelViewSet(ModelViewSet):
     """
-    Main end point for issues
+    End point for issues
     """
     permission_classes = (IsProjectContributor,)
     serializer_class = IssueSerializer
@@ -163,7 +170,7 @@ class IssueModelViewSet(ModelViewSet):
         """
         Lists all issue of a given project
         """
-        issues = get_list_or_404(Issue.objects.filter(project=kwargs['id_project']))
+        issues = get_list_or_404(self.queryset.filter(project=kwargs['id_project']))
         serializer = self.serializer_class(issues, many=True)
         return Response({'issues': serializer.data})
 
@@ -186,7 +193,7 @@ class IssueModelViewSet(ModelViewSet):
         Returns a specific issue by ID
         """
         issue_id = kwargs['id_issue']
-        issue = find_obj(Issue, issue_id)  # pb si pas de correspondance !! à gérer
+        issue = find_obj(Issue, issue_id)
         serializer = self.serializer_class(issue)
         return Response(serializer.data) if serializer.data else Response("No issue to display")
 
@@ -229,7 +236,7 @@ class IssueModelViewSet(ModelViewSet):
 
 class CommentModelViewSet(ModelViewSet):
     """
-    Main end point for comments
+    End point for comments
     """
     permission_classes = (IsProjectContributor, )
     serializer_class = CommentSerializer
@@ -239,9 +246,9 @@ class CommentModelViewSet(ModelViewSet):
         """
         Lists all comments on a project related issue
         """
-        project = get_object_or_404(Project.objects.filter(id=kwargs['id_project']))
-        issue = get_object_or_404(Issue.objects.filter(project=project))
-        comments = get_list_or_404(Comment.objects.filter(issue=issue))
+        project = get_object_or_404(ProjectsModelViewSet.queryset.filter(id=kwargs['id_project'])) # peut-etre superflu
+        issue = get_object_or_404(IssueModelViewSet.queryset.filter(project=project)) # si je passe ici kwargs['id_issue']
+        comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
         return Response({'comments': serializer.data})
 
@@ -250,8 +257,8 @@ class CommentModelViewSet(ModelViewSet):
         Add a comment to a project-related issue
         """
         user = request.user
-        project = get_object_or_404(Project.objects.filter(id=kwargs['id_project']))
-        issue = get_object_or_404(Issue.objects.filter(project=project))
+        project = get_object_or_404(Project.objects.filter(id=kwargs['id_project'])) # peut-etre superflu
+        issue = get_object_or_404(Issue.objects.filter(project=project)) # si je passe ici kwargs['id_issue']
         comment = request.data
         comment_copy = comment.copy()
         comment_copy['author'], comment_copy['project'], comment_copy['issue'] = user.id, project.id, issue.id
