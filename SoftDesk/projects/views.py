@@ -112,7 +112,6 @@ class ContributorModelViewSet(ModelViewSet):
         """
         Add a contributor to a given project
         """
-        current_user = request.user
         project_id = kwargs['id_project']
         find_obj(Project, project_id)
         if IsProjectCreator or IsProjectManager:
@@ -127,6 +126,7 @@ class ContributorModelViewSet(ModelViewSet):
             return Response('Insufficient permissions. '
                             'You must be the project creator or manager',
                             status=status.HTTP_401_UNAUTHORIZED)
+
 
 class SpecificContributorModelViewSet(ModelViewSet):
     """
