@@ -28,7 +28,7 @@ IsAuthor:
 
 from rest_framework import permissions
 
-from projects.models import Contributor, Issue
+from projects.models import Contributor, Issue, Comment
 
 
 class IsProjectCreator(permissions.DjangoModelPermissions):
@@ -94,7 +94,9 @@ class IsIssueAuthor(permissions.DjangoModelPermissions):
     }
 
     def has_permission(self, request, view,):
-        pass
+        current_user = request.user
+        issue_id = view.kwargs['id_issue']
+        return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
 
 
 class IsCommentAuthor(permissions.DjangoModelPermissions):
@@ -111,5 +113,5 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
     def has_permission(self, request, view,):
         pass
         current_user = request.user
-        project_id = view.kwargs['project']
-        return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
+        comment_id = view.kwargs['id_comment']
+        return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()

@@ -51,6 +51,9 @@ class Issue(models.Model):
                                  blank=True, null=True, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f'{self.title} ({self.tag}: {self.priority}) by {self.author} for Project "{self.project.title}"'
+
     objects = models.Manager()
 
 
@@ -63,5 +66,8 @@ class Comment(models.Model):
                                on_delete=models.CASCADE)
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.description} by {self.author} for issue "{self.issue.title}"'
 
     objects = models.Manager()
