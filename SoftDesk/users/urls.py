@@ -7,8 +7,8 @@ urlpatterns = [
     path('signup', CreateUserModelViewSet.as_view({
         'post': 'create'
     })),
-    path('login', AuthenticationAPIView.as_view()),
-    path('users', ListUsersModelViewSet.as_view({
+    path('login/', AuthenticationAPIView.as_view()),
+    path('users/', ListUsersModelViewSet.as_view({
         'get': 'list'
     }))  # test à retirer ensuite peut-etre
 ]

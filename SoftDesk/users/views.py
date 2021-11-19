@@ -11,7 +11,7 @@ from rest_framework_jwt.serializers import jwt_payload_handler
 
 from SoftDesk import settings
 from users.models import CustomUser
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserLoginSerializer
 
 
 class CreateUserModelViewSet(ModelViewSet):
@@ -19,16 +19,17 @@ class CreateUserModelViewSet(ModelViewSet):
     Endpoint to create a user
     """
     permission_classes = (AllowAny,)
+
     serializer_class = UserSerializer
     pass
 
 
-class AuthenticationAPIView(APIView):  #  peut etre à revoir car pas de serializer + pas sur: jwt au lieu de django_jwt
+class AuthenticationAPIView(APIView):
     """
-
+    Endpoint to Signup and get authentication Token
     """
     permission_classes = (AllowAny,)
-    serializer_class = UserSerializer  # pas utilisé ici
+    serializer_class = UserLoginSerializer
 
     @staticmethod
     def post(request, *args, **kwargs):
