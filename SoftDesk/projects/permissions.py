@@ -12,7 +12,7 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': [],
+        'POST': ['projects.add_contributor'],
         'PUT': ['projects.change_projects'],
         'PATCH': ['projects.change_projects'],
         'DELETE': ['projects.delete_projects'],
@@ -29,7 +29,7 @@ class IsProjectManager(permissions.DjangoModelPermissions):
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['projects.add_projects'],
+        'POST': ['projects.add_contributor'],
         'PUT': ['projects.change_projects'],
         'PATCH': ['projects.change_projects'],
         'DELETE': ['projects.delete_projects'],
@@ -43,13 +43,14 @@ class IsProjectManager(permissions.DjangoModelPermissions):
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
     perms_map = {
-        'GET': ['projects.list_projects'],
+        'GET': ['projects.list_issues', 'projects.list_comments',
+                'projects.retrieve_issues', 'projects.retrieve_comments'],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['projects.add_projects'],
-        'PUT': ['projects.change_projects'],
-        'PATCH': ['projects.change_projects'],
-        'DELETE': ['projects.delete_projects'],
+        'POST': ['projects.add_issues', 'projects.add_comments'],
+        'PUT': [],
+        'PATCH': [],
+        'DELETE': [],
     }
 
     def has_permission(self, request, view,):
@@ -80,7 +81,7 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['projects.add_comments'],
+        'POST': [],
         'PUT': ['projects.change_comments'],
         'PATCH': ['projects.change_comments'],
         'DELETE': ['projects.delete_comments'],

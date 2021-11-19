@@ -19,9 +19,7 @@ class CreateUserModelViewSet(ModelViewSet):
     Endpoint to create a user
     """
     permission_classes = (AllowAny,)
-
     serializer_class = UserSerializer
-    pass
 
 
 class AuthenticationAPIView(APIView):
@@ -68,4 +66,3 @@ class ListUsersModelViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    pass

@@ -54,13 +54,8 @@ class ProjectsModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
-        if IsProjectContributor:   # pb marche pas, voir pourquoi !
-            serializer = self.serializer_class(project)
-            return Response(serializer.data)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be a contributor to the project',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.serializer_class(project)
+        return Response(serializer.data)
 
     def update(self, request, **kwargs):
         """
@@ -121,8 +116,9 @@ class ContributorModelViewSet(ModelViewSet):
         Add a contributor to a given project
         """
         project_id = kwargs['id_project']
-        find_obj(Project, project_id)
-        if IsProjectCreator or IsProjectManager: # ne fonctionne pas !!!
+        project = find_obj(Project, project_id)
+        self.check_object_permissions(self.request, project)
+        if IsProjectCreator or IsProjectManager:  # ne fonctionne pas !!!
             contributor = request.data
             contributor_copy = contributor.copy()
             contributor_copy['project'] = project_id
