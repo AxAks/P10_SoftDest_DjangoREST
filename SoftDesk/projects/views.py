@@ -118,7 +118,7 @@ class ContributorModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = find_obj(Project, project_id)
         self.check_object_permissions(self.request, project)
-        if IsProjectCreator or IsProjectManager:  # ne fonctionne pas !!!
+        if IsProjectCreator: #or IsProjectManager:  # ne fonctionne pas: faire Creator si ca marche ajouter Manager!!!
             contributor = request.data
             contributor_copy = contributor.copy()
             contributor_copy['project'] = project_id

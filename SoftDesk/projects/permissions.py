@@ -1,9 +1,7 @@
 """
 This File sets Customs Authaurization and Access Permissions to Models
 """
-
 from rest_framework import permissions
-
 from projects.models import Contributor, Issue, Comment
 
 
@@ -23,6 +21,9 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
         project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
 
+    def has_object_permission(self, request, view, obj):
+        pass  # à ecrire
+
 
 class IsProjectManager(permissions.DjangoModelPermissions):
     perms_map = {
@@ -39,6 +40,9 @@ class IsProjectManager(permissions.DjangoModelPermissions):
         current_user = request.user
         project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
+
+    def has_object_permission(self, request, view, obj):
+        pass  # à ecrire
 
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
