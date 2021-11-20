@@ -1,5 +1,5 @@
 """
-This File sets Customs Authaurization and Access Permissions to Models
+This File sets Customs Authorization and Access Permissions to Models
 """
 from rest_framework import permissions
 from projects.models import Contributor, Issue, Comment
