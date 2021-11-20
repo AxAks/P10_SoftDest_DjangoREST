@@ -29,7 +29,6 @@ class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
         fields = ['id', 'user', 'project', 'role']
-        read_only_fields = ['project']
 
     def save(self):
         contributor = Contributor(
@@ -51,8 +50,8 @@ class ContributorSerializer(serializers.ModelSerializer):
 
         if contributor.role == 'Creator':
             errors['creator'] = 'Project creator cannot be added manually'
-        if has_manager:
-            errors['has_manager'] = 'Project Manager already registered'
+        if has_manager and contributor.role == 'Manager':
+            errors['has_manager'] = 'Project already has a registered Manager'
         if already_has_role:
             errors['already_has_role'] = 'User already has another role in the project'
         if already_registered_contributors:
