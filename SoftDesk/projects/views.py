@@ -20,14 +20,14 @@ class ProjectsModelViewSet(ModelViewSet):
     """
     permission_classes = (IsAuthenticated, )
     serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
+    queryset = Project.objects.order_by('-created_time')
 
     def list(self, request, *args, **kwargs):
         """
         enables an authenticated user to list all the projects he is part of.
         """
         user = request.user
-        projects = get_list_or_404(self.queryset.filter(contributor__user=user.id).order_by('-created_time'))
+        projects = get_list_or_404(self.queryset.filter(contributor__user=user.id))
 
         serializer = self.serializer_class(projects, many=True)
         return Response({'projects': serializer.data})
@@ -99,7 +99,7 @@ class ContributorModelViewSet(ModelViewSet):
     """
     permission_classes = (IsProjectContributor, )
     serializer_class = ContributorSerializer
-    queryset = Contributor.objects.all()
+    queryset = Contributor.objects.all().order_by('-project', 'user')
 
     def list(self, request, **kwargs):
         """
@@ -160,7 +160,7 @@ class IssueModelViewSet(ModelViewSet):
     """
     permission_classes = (IsProjectContributor,)
     serializer_class = IssueSerializer
-    queryset = Issue.objects.all()
+    queryset = Issue.objects.all().order_by('-created_time')
 
     def list(self, request, **kwargs):
         """
@@ -236,7 +236,7 @@ class CommentModelViewSet(ModelViewSet):
     """
     permission_classes = (IsProjectContributor, )
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.all().order_by('-created_time')
 
     def list(self, request, **kwargs):
         """
