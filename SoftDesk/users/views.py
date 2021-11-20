@@ -38,7 +38,7 @@ class AuthenticationAPIView(APIView):
             username = request.data['username']
             password = request.data['password']
 
-            user = get_object_or_404(CustomUser.objects.filter(username=username))  # error non catché si pas de match !
+            user = get_object_or_404(CustomUser.objects.filter(username=username))
             if user and check_password(password, user.password):
                 try:
                     payload = jwt_payload_handler(user)

@@ -21,9 +21,10 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
         project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
 
+    """
     def has_object_permission(self, request, view, obj):
         pass  # à ecrire
-
+    """
 
 class IsProjectManager(permissions.DjangoModelPermissions):
     perms_map = {
@@ -41,9 +42,10 @@ class IsProjectManager(permissions.DjangoModelPermissions):
         project_id = view.kwargs['id_project']
         return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
 
+    """
     def has_object_permission(self, request, view, obj):
         pass  # à ecrire
-
+    """
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
     perms_map = {

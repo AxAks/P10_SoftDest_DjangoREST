@@ -10,7 +10,7 @@ from projects.models import Project, Contributor, Issue, Comment
 from projects import lib_projects
 from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
-from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor,\
+from projects.permissions import IsProjectCreator, IsProjectManager, IsProjectContributor, \
     IsIssueAuthor, IsCommentAuthor
 
 
@@ -18,7 +18,7 @@ class ProjectsModelViewSet(ModelViewSet):
     """
     Endpoint for Projects
     """
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     serializer_class = ProjectSerializer
     queryset = Project.objects.order_by('-created_time')
 
@@ -53,7 +53,7 @@ class ProjectsModelViewSet(ModelViewSet):
         Returns a specific project by ID
         """
         project_id = kwargs['id_project']
-        project = lib_projects.find_obj_by_id(Project, project_id)
+        project = lib_projects.find_obj_by_id(Project, project_id) # à limiter aux projets dde l'user courant seulement
         serializer = self.serializer_class(project)
         return Response(serializer.data)
 
@@ -77,7 +77,7 @@ class ProjectsModelViewSet(ModelViewSet):
                             'You must be the project creator or manager',
                             status=status.HTTP_401_UNAUTHORIZED)
 
-    def destroy(self, **kwargs): # seul projects managers et creator !!
+    def destroy(self, request, **kwargs):  # seul projects managers et creator !!
         """
         Enables the user to delete a given project and all related issues
         """
@@ -97,7 +97,7 @@ class ContributorModelViewSet(ModelViewSet):
     """
     End point for contributors
     """
-    permission_classes = (IsProjectContributor, )
+    permission_classes = (IsProjectContributor,)
     serializer_class = ContributorSerializer
     queryset = Contributor.objects.all().order_by('-project', 'user')
 
@@ -117,8 +117,8 @@ class ContributorModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
-        self.check_object_permissions(self.request, project)
-        if IsProjectCreator: #or IsProjectManager:  # ne fonctionne pas: faire Creator si ca marche ajouter Manager!!!
+
+        if IsProjectCreator:  # or IsProjectManager:  # ne fonctionne pas: faire Creator si ca marche ajouter Manager!!!
             contributor = request.data
             contributor_copy = contributor.copy()
             contributor_copy['project'] = project_id
@@ -148,7 +148,8 @@ class ContributorModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         contributor_id = kwargs['id_user']
-        contributor = get_object_or_404(Contributor.objects.get(project_id=project_id, user_id=contributor_id)) # pb si pas de correspondance !! à gérer
+        contributor = get_object_or_404(Contributor.objects.get(project_id=project_id,
+                                                                user_id=contributor_id))  # pb si pas de correspondance !! à gérer
         contributor.delete()
         serializer = self.serializer_class(contributor)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
@@ -220,7 +221,8 @@ class IssueModelViewSet(ModelViewSet):
         Remove a contributor from a Project
         """
         issue_id = kwargs['id_issue']
-        issue = get_object_or_404(lib_projects.find_obj_by_id(Issue, issue_id))   # pb si pas de correspondance !! à gérer
+        issue = get_object_or_404(
+            lib_projects.find_obj_by_id(Issue, issue_id))  # pb si pas de correspondance !! à gérer
         if IsIssueAuthor:
             issue.delete()
             serializer = self.serializer_class(issue)
@@ -234,7 +236,7 @@ class CommentModelViewSet(ModelViewSet):
     """
     End point for comments
     """
-    permission_classes = (IsProjectContributor, )
+    permission_classes = (IsProjectContributor,)
     serializer_class = CommentSerializer
     queryset = Comment.objects.all().order_by('-created_time')
 
@@ -242,8 +244,10 @@ class CommentModelViewSet(ModelViewSet):
         """
         Lists all comments on a project related issue
         """
-        project = get_object_or_404(ProjectsModelViewSet.queryset.filter(id=kwargs['id_project'])) # peut-etre superflu
-        issue = get_object_or_404(IssueModelViewSet.queryset.filter(project=project)) # si je passe ici kwargs['id_issue']
+        project = get_object_or_404(
+            ProjectsModelViewSet.queryset.filter(id=kwargs['id_project']))  # peut-etre superflu
+        issue = get_object_or_404(
+            IssueModelViewSet.queryset.filter(project=project))  # si je passe ici kwargs['id_issue']
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
         return Response({'comments': serializer.data})
@@ -253,8 +257,10 @@ class CommentModelViewSet(ModelViewSet):
         Add a comment to a project-related issue
         """
         user = request.user
-        project = get_object_or_404(ProjectsModelViewSet.queryset.filter(id=kwargs['id_project'])) # peut-etre superflu
-        issue = get_object_or_404(IssueModelViewSet.queryset.filter(project=project)) # si je passe ici kwargs['id_issue']
+        project = get_object_or_404(
+            ProjectsModelViewSet.queryset.filter(id=kwargs['id_project']))  # peut-etre superflu
+        issue = get_object_or_404(
+            IssueModelViewSet.queryset.filter(project=project))  # si je passe ici kwargs['id_issue']
         comment = request.data
         comment_copy = comment.copy()
         comment_copy['author'], comment_copy['project'], comment_copy['issue'] = user.id, project.id, issue.id
