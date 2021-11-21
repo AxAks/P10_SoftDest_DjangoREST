@@ -121,10 +121,10 @@ class ContributorModelViewSet(ModelViewSet):
         if IsProjectCreator:  # or IsProjectManager:  # ne fonctionne pas: faire Creator si ca marche ajouter Manager!!!
             contributor = request.data
             contributor_copy = contributor.copy()
-            contributor_copy['project'] = project_id
+            contributor_copy['project'] = project
             serializer = self.serializer_class(data=contributor_copy)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(project)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response('Insufficient permissions. '

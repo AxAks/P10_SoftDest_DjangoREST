@@ -29,11 +29,12 @@ class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contributor
         fields = ['id', 'user', 'project', 'role']
+        read_only_fields = ['project']
 
-    def save(self):
+    def save(self, project):
         contributor = Contributor(
             user=self.validated_data['user'],
-            project=self.validated_data['project'],
+            project=project,
             role=self.validated_data['role'],
         )
 
