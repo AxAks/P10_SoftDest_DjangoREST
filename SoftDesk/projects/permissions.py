@@ -24,6 +24,14 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
             project_id = view.kwargs['id_project']
             return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
 
+    def has_object_permission(self, request, view, obj):
+        current_user = request.user
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
+
 
 class IsProjectManager(permissions.DjangoModelPermissions):
     perms_map = {
@@ -44,6 +52,14 @@ class IsProjectManager(permissions.DjangoModelPermissions):
             project_id = view.kwargs['id_project']
             return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
 
+    def has_object_permission(self, request, view, obj):
+        current_user = request.user
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+        return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
+
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
     perms_map = {
@@ -57,6 +73,14 @@ class IsProjectContributor(permissions.DjangoModelPermissions):
     }
 
     def has_permission(self, request, view,):
+        current_user = request.user
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+            return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
+
+    def has_object_permission(self, request, view, obj):
         current_user = request.user
         if 'id_project' not in view.kwargs.keys():
             return True
@@ -84,6 +108,13 @@ class IsIssueAuthor(permissions.DjangoModelPermissions):
             issue_id = view.kwargs['id_issue']
             return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
 
+    def has_object_permission(self, request, view,):
+        current_user = request.user
+        if 'id_issue' not in view.kwargs.keys():
+            return True
+        else:
+            issue_id = view.kwargs['id_issue']
+            return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
 
 class IsCommentAuthor(permissions.DjangoModelPermissions):
     perms_map = {
@@ -97,7 +128,14 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
     }
 
     def has_permission(self, request, view,):
-        pass
+        current_user = request.user
+        if 'id_comment' not in view.kwargs.keys():
+            return True
+        else:
+            comment_id = view.kwargs['id_comment']
+            return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
+
+    def has_object_permission(self, request, view,):
         current_user = request.user
         if 'id_comment' not in view.kwargs.keys():
             return True
