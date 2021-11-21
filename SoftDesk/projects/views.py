@@ -175,14 +175,15 @@ class IssueModelViewSet(ModelViewSet):
         """
         Adds an issue to a given project
         """
-        project = kwargs['id_project']
+        project_id = kwargs['id_project']
+        project = lib_projects.find_obj_by_id(Project, project_id)
         user = request.user
         issue = request.data
         issue_copy = issue.copy()
-        issue_copy['author'], issue_copy['project'] = user.id, project
+        issue_copy['author'], issue_copy['project'] = user, project
         serializer = self.serializer_class(data=issue_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user, project)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
@@ -244,10 +245,8 @@ class CommentModelViewSet(ModelViewSet):
         """
         Lists all comments on a project related issue
         """
-        project = get_object_or_404(
-            ProjectsModelViewSet.queryset.filter(id=kwargs['id_project']))  # peut-etre superflu
         issue = get_object_or_404(
-            IssueModelViewSet.queryset.filter(project=project))  # si je passe ici kwargs['id_issue']
+            IssueModelViewSet.queryset.filter(id=kwargs['id_issue']))
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
         return Response({'comments': serializer.data})
@@ -257,16 +256,14 @@ class CommentModelViewSet(ModelViewSet):
         Add a comment to a project-related issue
         """
         user = request.user
-        project = get_object_or_404(
-            ProjectsModelViewSet.queryset.filter(id=kwargs['id_project']))  # peut-etre superflu
         issue = get_object_or_404(
-            IssueModelViewSet.queryset.filter(project=project))  # si je passe ici kwargs['id_issue']
+            IssueModelViewSet.queryset.filter(id=kwargs['id_issue']))
         comment = request.data
         comment_copy = comment.copy()
-        comment_copy['author'], comment_copy['project'], comment_copy['issue'] = user.id, project.id, issue.id
+        comment_copy['author'], comment_copy['issue'] = user.id, issue.id
         serializer = self.serializer_class(data=comment_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user, issue)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):

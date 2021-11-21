@@ -17,10 +17,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
         already_existing_projects = [project for project
                                      in Project.objects.filter(title=project.title, description=project.description,
-                                                               type=project.type,)]
+                                                               type=project.type, )]
         if already_existing_projects:
             raise serializers.ValidationError({'already_existing_project':
-                                               'Exact same project already exists'})
+                                                   'Exact same project already exists'})
         project.save()
         return project
 
@@ -71,9 +71,38 @@ class IssueSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'tag', 'priority', 'project', 'status', 'author', 'assignee']
         read_only_fields = ['project', 'author']
 
+    def save(self, user, project):
+        issue = Issue(
+            title=self.validated_data['title'],
+            description=self.validated_data['description'],
+            tag=self.validated_data['tag'],
+            priority=self.validated_data['priority'],
+            status=self.validated_data['status'],
+            assignee=self.validated_data['assignee'],
+            author=user,
+            project=project,
+        )
+
+        #  mettre des verifs ici si besoin
+
+        issue.save()
+        return issue
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'description', 'author', 'issue']
         read_only_fields = ['issue', 'author']
+
+    def save(self, user, issue):
+        comment = Comment(
+            description=self.validated_data['description'],
+            author=user,
+            issue=issue,
+        )
+
+        #  mettre des verifs ici si besoin
+
+        comment.save()
+        return comment

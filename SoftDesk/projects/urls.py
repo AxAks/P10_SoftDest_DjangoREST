@@ -35,11 +35,11 @@ urlpatterns = [
             'put': 'update',
             'delete': 'destroy'
         })),
-    path('<int:id_project>/issues/<int:issue>/comments/', CommentModelViewSet.as_view({
+    path('<int:id_project>/issues/<int:id_issue>/comments/', CommentModelViewSet.as_view({
             'get': 'list',
             'post': 'create'
         })),
-    path('<int:id_project>/issues/<int:issue>/comments/<int:id_comment>', CommentModelViewSet.as_view({
+    path('<int:id_project>/issues/<int:id_issue>/comments/<int:id_comment>', CommentModelViewSet.as_view({
             'get': 'retrieve',
             'put': 'update',
             'delete': 'destroy'
