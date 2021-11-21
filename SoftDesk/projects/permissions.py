@@ -99,7 +99,7 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
     def has_permission(self, request, view,):
         pass
         current_user = request.user
-        if 'id_issue' not in view.kwargs.keys():
+        if 'id_comment' not in view.kwargs.keys():
             return True
         else:
             comment_id = view.kwargs['id_comment']
