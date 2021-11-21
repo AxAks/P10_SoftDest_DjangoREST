@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from django.shortcuts import get_list_or_404
@@ -89,7 +88,7 @@ class ContributorModelViewSet(ModelViewSet):
     """
     End point for contributors
     """
-    permission_classes = (IsProjectContributor,)
+    permission_classes = (IsProjectContributor, IsProjectCreator, IsProjectManager,)
     serializer_class = ContributorSerializer
     queryset = Contributor.objects.all().order_by('-project', 'user')
 
@@ -146,7 +145,7 @@ class IssueModelViewSet(ModelViewSet):
     """
     End point for issues
     """
-    permission_classes = (IsProjectContributor, IsIssueAuthor)
+    permission_classes = (IsProjectContributor, IsIssueAuthor,)
     serializer_class = IssueSerializer
     queryset = Issue.objects.all().order_by('-created_time')
 
