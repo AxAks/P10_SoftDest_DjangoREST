@@ -108,7 +108,7 @@ class IsIssueAuthor(permissions.DjangoModelPermissions):
             issue_id = view.kwargs['id_issue']
             return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
 
-    def has_object_permission(self, request, view,):
+    def has_object_permission(self, request, view, obj):
         current_user = request.user
         if 'id_issue' not in view.kwargs.keys():
             return True
@@ -135,7 +135,7 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
             comment_id = view.kwargs['id_comment']
             return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
 
-    def has_object_permission(self, request, view,):
+    def has_object_permission(self, request, view, obj):
         current_user = request.user
         if 'id_comment' not in view.kwargs.keys():
             return True
