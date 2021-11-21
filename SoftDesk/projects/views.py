@@ -18,7 +18,7 @@ class ProjectsModelViewSet(ModelViewSet):
     """
     Endpoint for Projects
     """
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsProjectContributor,)
     serializer_class = ProjectSerializer
     queryset = Project.objects.order_by('-created_time')
 
@@ -63,19 +63,15 @@ class ProjectsModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
-        if IsProjectCreator or IsProjectManager:
-            project.title = request.data['title'] if 'title' in request.data.keys() else project.title
-            project.description = request.data['description'] \
-                if 'description' in request.data.keys() else project.description
-            project.type = request.data['type'] if 'type' in request.data.keys() else project.type
+        # if IsProjectCreator or IsProjectManager !!
+        project.title = request.data['title'] if 'title' in request.data.keys() else project.title
+        project.description = request.data['description'] \
+            if 'description' in request.data.keys() else project.description
+        project.type = request.data['type'] if 'type' in request.data.keys() else project.type
 
-            project.save()
-            serializer = self.serializer_class(project)
-            return Response(serializer.data)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be the project creator or manager',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        project.save()
+        serializer = self.serializer_class(project)
+        return Response(serializer.data)
 
     def destroy(self, request, **kwargs):  # seul projects managers et creator !!
         """
@@ -83,14 +79,10 @@ class ProjectsModelViewSet(ModelViewSet):
         """
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
-        if IsProjectCreator or IsProjectManager:
-            project.delete()
-            serializer = self.serializer_class(project)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be the project creator or manager',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        # if IsProjectCreator or IsProjectManager !!
+        project.delete()
+        serializer = self.serializer_class(project)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class ContributorModelViewSet(ModelViewSet):
@@ -118,18 +110,13 @@ class ContributorModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
 
-        if IsProjectCreator:  # or IsProjectManager:  # ne fonctionne pas: faire Creator si ca marche ajouter Manager!!!
-            contributor = request.data
-            contributor_copy = contributor.copy()
-            contributor_copy['project'] = project
-            serializer = self.serializer_class(data=contributor_copy)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(project)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be the project creator or manager',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        contributor = request.data
+        contributor_copy = contributor.copy()
+        contributor_copy['project'] = project
+        serializer = self.serializer_class(data=contributor_copy)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(project)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
         """
@@ -159,7 +146,7 @@ class IssueModelViewSet(ModelViewSet):
     """
     End point for issues
     """
-    permission_classes = (IsProjectContributor,)
+    permission_classes = (IsProjectContributor, IsIssueAuthor)
     serializer_class = IssueSerializer
     queryset = Issue.objects.all().order_by('-created_time')
 
@@ -201,21 +188,18 @@ class IssueModelViewSet(ModelViewSet):
         """
         issue_id = kwargs['id_issue']
         issue = get_object_or_404(lib_projects.find_obj_by_id(Issue, issue_id))
-        if IsIssueAuthor:
-            issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
-            issue.description = request.data['description'] \
-                if 'description' in request.data.keys() else issue.description
-            issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
-            issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
-            issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
-            issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
+        # if IsIssueAuthor !!
+        issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
+        issue.description = request.data['description'] \
+            if 'description' in request.data.keys() else issue.description
+        issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
+        issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
+        issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
+        issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
 
-            issue.save()
-            serializer = self.serializer_class(issue)
-            return Response(serializer.data)
-        else:
-            return Response('Insufficient permissions. You must be the Issue Author',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        issue.save()
+        serializer = self.serializer_class(issue)
+        return Response(serializer.data)
 
     def destroy(self, request, **kwargs):
         """
@@ -224,20 +208,17 @@ class IssueModelViewSet(ModelViewSet):
         issue_id = kwargs['id_issue']
         issue = get_object_or_404(
             lib_projects.find_obj_by_id(Issue, issue_id))  # pb si pas de correspondance !! à gérer
-        if IsIssueAuthor:
-            issue.delete()
-            serializer = self.serializer_class(issue)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response('Insufficient permissions. You must be the Issue Author',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        # if IsIssueAuthor !!
+        issue.delete()
+        serializer = self.serializer_class(issue)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentModelViewSet(ModelViewSet):
     """
     End point for comments
     """
-    permission_classes = (IsProjectContributor,)
+    permission_classes = (IsProjectContributor, IsCommentAuthor)
     serializer_class = CommentSerializer
     queryset = Comment.objects.all().order_by('-created_time')
 
@@ -281,17 +262,13 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment_id = kwargs['id_comment']
         comment = lib_projects.find_obj_by_id(Comment, comment_id)
-        if IsCommentAuthor:
-            comment.description = request.data['description'] \
-                if 'description' in request.data.keys() else comment.description
+        # if IsCommentAuthor !!
+        comment.description = request.data['description'] \
+            if 'description' in request.data.keys() else comment.description
 
-            comment.save()
-            serializer = self.serializer_class(comment)
-            return Response(serializer.data)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be the comment author',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        comment.save()
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data)
 
     def destroy(self, request, **kwargs):
         """
@@ -299,11 +276,7 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment_id = kwargs['id_comment']
         comment = lib_projects.find_obj_by_id(Comment, comment_id)
-        if IsCommentAuthor:
-            comment.delete()
-            serializer = self.serializer_class(comment)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response('Insufficient permissions. '
-                            'You must be the comment author',
-                            status=status.HTTP_401_UNAUTHORIZED)
+        # if IsCommentAuthor !!
+        comment.delete()
+        serializer = self.serializer_class(comment)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)

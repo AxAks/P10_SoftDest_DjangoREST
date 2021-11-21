@@ -10,7 +10,7 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['projects.add_contributor'],
+        'POST': ['projects.add_contributor', 'projects.add_issues', 'projects.add_comments'],
         'PUT': ['projects.change_projects'],
         'PATCH': ['projects.change_projects'],
         'DELETE': ['projects.delete_projects'],
@@ -18,20 +18,19 @@ class IsProjectCreator(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        project_id = view.kwargs['id_project']
-        return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
 
-    """
-    def has_object_permission(self, request, view, obj):
-        pass  # à ecrire
-    """
 
 class IsProjectManager(permissions.DjangoModelPermissions):
     perms_map = {
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': ['projects.add_contributor'],
+        'POST': ['projects.add_contributor', 'projects.add_issues', 'projects.add_comments'],
         'PUT': ['projects.change_projects'],
         'PATCH': ['projects.change_projects'],
         'DELETE': ['projects.delete_projects'],
@@ -39,18 +38,16 @@ class IsProjectManager(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        project_id = view.kwargs['id_project']
-        return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
 
-    """
-    def has_object_permission(self, request, view, obj):
-        pass  # à ecrire
-    """
 
 class IsProjectContributor(permissions.DjangoModelPermissions):
     perms_map = {
-        'GET': ['projects.list_issues', 'projects.list_comments',
-                'projects.retrieve_issues', 'projects.retrieve_comments'],
+        'GET': [],
         'OPTIONS': [],
         'HEAD': [],
         'POST': ['projects.add_issues', 'projects.add_comments'],
@@ -61,8 +58,11 @@ class IsProjectContributor(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        project_id = view.kwargs['id_project']
-        return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
+        if 'id_project' not in view.kwargs.keys():
+            return True
+        else:
+            project_id = view.kwargs['id_project']
+            return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
 
 
 class IsIssueAuthor(permissions.DjangoModelPermissions):
@@ -78,8 +78,11 @@ class IsIssueAuthor(permissions.DjangoModelPermissions):
 
     def has_permission(self, request, view,):
         current_user = request.user
-        issue_id = view.kwargs['id_issue']
-        return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
+        if 'id_issue' not in view.kwargs.keys():
+            return True
+        else:
+            issue_id = view.kwargs['id_issue']
+            return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
 
 
 class IsCommentAuthor(permissions.DjangoModelPermissions):
@@ -87,7 +90,7 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
         'GET': [],
         'OPTIONS': [],
         'HEAD': [],
-        'POST': [],
+        'POST': ['projects.add_comments'],
         'PUT': ['projects.change_comments'],
         'PATCH': ['projects.change_comments'],
         'DELETE': ['projects.delete_comments'],
@@ -96,5 +99,8 @@ class IsCommentAuthor(permissions.DjangoModelPermissions):
     def has_permission(self, request, view,):
         pass
         current_user = request.user
-        comment_id = view.kwargs['id_comment']
-        return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
+        if 'id_issue' not in view.kwargs.keys():
+            return True
+        else:
+            comment_id = view.kwargs['id_comment']
+            return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
