@@ -242,7 +242,8 @@ class CommentModelViewSet(ModelViewSet):
         Add a comment to a project-related issue
         """
         user = request.user
-        issue = get_object_or_404(IssueModelViewSet.queryset.filter(id=kwargs['id_issue']))
+        project = kwargs['id_project']
+        issue = get_object_or_404(IssueModelViewSet.queryset.filter(project=project, id=kwargs['id_issue']))
         comment = request.data
         comment_copy = comment.copy()
         comment_copy['author'], comment_copy['issue'] = user.id, issue.id
