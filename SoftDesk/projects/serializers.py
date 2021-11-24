@@ -10,7 +10,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'type', 'author', 'created_time']
         read_only_fields = ['author', 'created_time']
 
-    def save(self, author):
+    def save(self, author) -> Project:
         project = Project(
             title=self.validated_data['title'],
             description=self.validated_data['description'],
@@ -30,7 +30,7 @@ class ContributorSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'project', 'role']
         read_only_fields = ['project']
 
-    def save(self, project):
+    def save(self, project) -> Contributor:
         contributor = Contributor(
             user=self.validated_data['user'],
             project=project,
@@ -64,7 +64,7 @@ class IssueSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'tag', 'priority', 'project', 'status', 'author', 'assignee']
         read_only_fields = ['project', 'author']
 
-    def save(self, user, project):
+    def save(self, user, project) -> Issue:
         issue = Issue(
             title=self.validated_data['title'],
             description=self.validated_data['description'],
@@ -88,7 +88,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'description', 'author', 'issue']
         read_only_fields = ['issue', 'author']
 
-    def save(self, user, issue):
+    def save(self, user, issue) -> Comment:
         comment = Comment(
             description=self.validated_data['description'],
             author=user,
