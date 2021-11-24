@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
@@ -132,7 +133,8 @@ class ContributorModelViewSet(ModelViewSet):
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
         contributor.role = request.data['role'] if 'role' in request.data.keys() else contributor.role
-        serializer = self.serializer_class(contributor)
+        contrib_as_dict = model_to_dict(contributor) # marche pas car le user est deja dans le projet en tant que contrib
+        serializer = self.serializer_class(data=contrib_as_dict)
         serializer.is_valid(raise_exception=True)
         serializer.save(contributor.project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
