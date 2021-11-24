@@ -1,4 +1,3 @@
-from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
@@ -7,7 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from django.shortcuts import get_list_or_404
 
 from projects.models import Project, Contributor, Issue, Comment
-from projects import lib_projects
+from projects.libs import lib_projects
 from projects.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer
 
 from projects.permissions import ProjectPermissions, ContributorPermissions, IssuePermissions, CommentPermissions

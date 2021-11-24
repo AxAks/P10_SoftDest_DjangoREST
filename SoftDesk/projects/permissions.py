@@ -3,7 +3,7 @@ This File sets Customs Authorization and Access Permissions to Models
 """
 from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS
-from projects import lib_permissions
+from projects.libs import lib_permissions
 
 
 class ProjectPermissions(permissions.DjangoModelPermissions):
