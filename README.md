@@ -91,16 +91,67 @@ from the terminal, in the root directory of the project:
 _activate the environment:_    
 $ source 'venv_name'/bin/activate        
 _launch the Django server_       
-$ python LITReview/manage.py runserver    
-_visit the website locally_       
-Open your web browser and visit the URL:     
-localhost:8000 (or 0.0.0.0:8000)       
--> You land on the Login/Signup page           
+$ python SoftDesk/manage.py runserver    
+-> The Server is ready  
 ***
 
 ## 5. Usage <a name="usage"></a>
 
-Summary of Endpoints:
+Definition of Endpoints:
 
-Users
+Users:
+- user registration (POST)
+URL -> /signup/ 
+- login (POST)
+URL -> /login/
+- user listing (GET)
+URL -> /users/
+
+Projects:
+- create project (POST)
+URL -> /projects/
+- list projects (GET)
+URL -> /projects/
+- find project (GET)
+URL -> /projects/{id_project}
+- edit project (PUT)
+URL -> /projects/{id_project}
+- delete project (DELETE)
+URL -> /projects/{id_project}
+
+Contributors:
+- add contributor (POST)
+URL -> /projects/{id_project}/users/
+- list project contributors (GET)
+URL -> /projects/{id_project}/users/
+- find contributor (GET)
+URL -> /projects/{id_project}/users/{id_user}
+- edit contributor (PUT)
+URL -> /projects/{id_project}/users/{id_user}
+- remove contributor (DELETE)
+URL -> /projects/{id_project}/users/{id_user}
+
+Issues:
+- create issue (POST)
+URL -> /projects/{id_project}/issues/
+- list project issues (GET)
+URL -> /projects/{id_project}/issues/
+- find issue (GET)
+URL -> /projects/{id_project}/issues/{id_issue}
+- edit issue (PUT)
+URL -> /projects/{id_project}/issues/{id_issue}
+- delete issue (DELETE)
+URL -> /projects/{id_project}/issues/{id_issue}
+
+Comments:
+- create comment (POST)
+URL -> /projects/{id_project}/issues/{id_issue}/comments/
+- list issue comments (GET)
+URL -> /projects/{id_project}/issues/{id_issue}/comments/
+- find comment (GET)
+URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
+- edit comment (PUT)
+URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
+- delete comment (DELETE)
+URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
 ***
