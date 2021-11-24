@@ -28,7 +28,7 @@ class ProjectModelViewSet(ModelViewSet):
         projects = get_list_or_404(self.queryset.filter(contributor__user=user.id))
 
         serializer = self.serializer_class(projects, many=True)
-        return Response({'projects': serializer.data})
+        return Response({'projects': serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         """
@@ -53,7 +53,7 @@ class ProjectModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
         serializer = self.serializer_class(project)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
         """
@@ -69,7 +69,7 @@ class ProjectModelViewSet(ModelViewSet):
 
         project.save()
         serializer = self.serializer_class(project)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -99,7 +99,7 @@ class ContributorModelViewSet(ModelViewSet):
         lib_projects.find_obj_by_id(Project, project_id)
         contributors = get_list_or_404(self.queryset.filter(project_id=project_id))
         serializer = self.serializer_class(contributors, many=True)
-        return Response({'contributors': serializer.data})
+        return Response({'contributors': serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, **kwargs):
         """
@@ -123,7 +123,7 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         serializer = self.serializer_class(contributor)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
         """
@@ -132,9 +132,10 @@ class ContributorModelViewSet(ModelViewSet):
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
         contributor.role = request.data['role'] if 'role' in request.data.keys() else contributor.role
-        contributor.save()
         serializer = self.serializer_class(contributor)
-        return Response(serializer.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(contributor.project)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -161,7 +162,7 @@ class IssueModelViewSet(ModelViewSet):
         """
         issues = get_list_or_404(self.queryset.filter(project=kwargs['id_project']))
         serializer = self.serializer_class(issues, many=True)
-        return Response({'issues': serializer.data})
+        return Response({'issues': serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, **kwargs):
         """
@@ -184,7 +185,7 @@ class IssueModelViewSet(ModelViewSet):
         """
         issue = lib_projects.find_issue(self.queryset, kwargs)
         serializer = self.serializer_class(issue)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
         """
@@ -202,7 +203,7 @@ class IssueModelViewSet(ModelViewSet):
 
         issue.save()
         serializer = self.serializer_class(issue)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -230,7 +231,7 @@ class CommentModelViewSet(ModelViewSet):
         issue = get_object_or_404(IssueModelViewSet.queryset.filter(id=kwargs['id_issue']))
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
-        return Response({'comments': serializer.data})
+        return Response({'comments': serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, **kwargs):
         """
@@ -252,7 +253,7 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment = lib_projects.find_comment(self.queryset, kwargs)
         serializer = self.serializer_class(comment)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
         """
@@ -265,7 +266,7 @@ class CommentModelViewSet(ModelViewSet):
 
         comment.save()
         serializer = self.serializer_class(comment)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
