@@ -31,5 +31,5 @@ def find_comment(queryset, kwargs):
     project_id = kwargs['id_project']
     issue_id = kwargs['id_issue']
     comment_id = kwargs['id_comment']
-    comment = get_object_or_404(queryset.filter(project=project_id, issue=issue_id, comment=comment_id))
+    comment = get_object_or_404(queryset.filter(issue__project=project_id, issue=issue_id, id=comment_id))
     return comment

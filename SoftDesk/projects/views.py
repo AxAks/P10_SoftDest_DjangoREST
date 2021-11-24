@@ -232,7 +232,7 @@ class CommentModelViewSet(ModelViewSet):
         """
         Lists all comments on a project related issue
         """
-        issue = get_object_or_404(IssueModelViewSet.queryset.filter(id=kwargs['id_issue']))
+        issue = lib_projects.find_issue(IssueModelViewSet.queryset, kwargs)
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
         return Response({'comments': serializer.data}, status=status.HTTP_200_OK)
@@ -241,9 +241,8 @@ class CommentModelViewSet(ModelViewSet):
         """
         Add a comment to a project-related issue
         """
-        user = request.user
-        project = kwargs['id_project']
-        issue = get_object_or_404(IssueModelViewSet.queryset.filter(project=project, id=kwargs['id_issue']))
+        user= request.user
+        issue = lib_projects.find_issue(IssueModelViewSet.queryset, kwargs)
         comment = request.data
         comment_copy = comment.copy()
         comment_copy['author'], comment_copy['issue'] = user.id, issue.id
