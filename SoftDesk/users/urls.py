@@ -4,7 +4,7 @@ from users.views import CreateUserModelViewSet, AuthenticationAPIView, ListUsers
 app_name = "users"
 
 urlpatterns = [
-    path('signup', CreateUserModelViewSet.as_view({
+    path('signup/', CreateUserModelViewSet.as_view({
         'post': 'create'
     })),
     path('login/', AuthenticationAPIView.as_view()),
