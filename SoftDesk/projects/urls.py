@@ -1,17 +1,17 @@
 from django.urls import path
-from projects.views import ProjectsModelViewSet, ContributorModelViewSet, IssueModelViewSet, CommentModelViewSet
+from projects.views import ProjectModelViewSet, ContributorModelViewSet, IssueModelViewSet, CommentModelViewSet
 
 app_name = "projects"
 
 
 urlpatterns = [
-    path('', ProjectsModelViewSet.as_view(
+    path('', ProjectModelViewSet.as_view(
         {
             'get': 'list',
             'post': 'create'
         }
     )),
-    path('<int:id_project>', ProjectsModelViewSet.as_view({
+    path('<int:id_project>', ProjectModelViewSet.as_view({
             'get': 'retrieve',
             'put': 'update',
             'delete': 'destroy'

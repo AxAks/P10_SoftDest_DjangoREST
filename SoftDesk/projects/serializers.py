@@ -9,11 +9,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'type', 'author', 'created_time']
         read_only_fields = ['author', 'created_time']
 
-    def save(self):
+    def save(self, author):
         project = Project(
             title=self.validated_data['title'],
             description=self.validated_data['description'],
             type=self.validated_data['type'],
+            author=author
         )
         already_existing_projects = [project for project
                                      in Project.objects.filter(title=project.title, description=project.description,

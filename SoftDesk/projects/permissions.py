@@ -2,143 +2,50 @@
 This File sets Customs Authorization and Access Permissions to Models
 """
 from rest_framework import permissions
-from projects.models import Contributor, Issue, Comment
+from rest_framework.permissions import SAFE_METHODS
+from projects import lib_permissions
 
 
-class IsProjectCreator(permissions.DjangoModelPermissions):
-    perms_map = {
-        'GET': [],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': ['projects.add_contributor', 'projects.add_issues', 'projects.add_comments'],
-        'PUT': ['projects.change_projects'],
-        'PATCH': ['projects.change_projects'],
-        'DELETE': ['projects.delete_projects'],
-    }
-
-    def has_permission(self, request, view,):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
-            return True
-        else:
-            project_id = view.kwargs['id_project']
-            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
+class ProjectPermissions(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
+        if request.method in [SAFE_METHODS, 'POST']:
             return True
         else:
-            project_id = view.kwargs['id_project']
-            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Creator').exists()
+            return lib_permissions.is_project_admin(request, view)
 
 
-class IsProjectManager(permissions.DjangoModelPermissions):
-    perms_map = {
-        'GET': [],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': ['projects.add_contributor', 'projects.add_issues', 'projects.add_comments'],
-        'PUT': ['projects.change_projects'],
-        'PATCH': ['projects.change_projects'],
-        'DELETE': ['projects.delete_projects'],
-    }
-
-    def has_permission(self, request, view,):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
-            return True
-        else:
-            project_id = view.kwargs['id_project']
-            return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
+class ContributorPermissions(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return lib_permissions.is_project_contributor(request, view)
 
     def has_object_permission(self, request, view, obj):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
+        if request.method in SAFE_METHODS:
             return True
         else:
-            project_id = view.kwargs['id_project']
-        return Contributor.objects.filter(project=project_id, user=current_user.id, role='Manager').exists()
+            return lib_permissions.is_project_admin(request, view)
 
 
-class IsProjectContributor(permissions.DjangoModelPermissions):
-    perms_map = {
-        'GET': [],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': ['projects.add_issues', 'projects.add_comments'],
-        'PUT': [],
-        'PATCH': [],
-        'DELETE': [],
-    }
-
-    def has_permission(self, request, view,):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
-            return True
-        else:
-            project_id = view.kwargs['id_project']
-            return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
+class IssuePermissions(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return lib_permissions.is_project_contributor(request, view)
 
     def has_object_permission(self, request, view, obj):
-        current_user = request.user
-        if 'id_project' not in view.kwargs.keys():
+        if request.method in [SAFE_METHODS, 'POST']:
             return True
         else:
-            project_id = view.kwargs['id_project']
-            return Contributor.objects.filter(project=project_id, user=current_user.id).exists()
+            return lib_permissions.is_issue_author(request, view)
 
 
-class IsIssueAuthor(permissions.DjangoModelPermissions):
-    perms_map = {
-        'GET': [],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': [],
-        'PUT': ['projects.change_issues'],
-        'PATCH': ['projects.change_issues'],
-        'DELETE': ['projects.delete_issues'],
-    }
-
-    def has_permission(self, request, view,):
-        current_user = request.user
-        if 'id_issue' not in view.kwargs.keys():
-            return True
-        else:
-            issue_id = view.kwargs['id_issue']
-            return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
+class CommentPermissions(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return lib_permissions.is_project_contributor(request, view)
 
     def has_object_permission(self, request, view, obj):
-        current_user = request.user
-        if 'id_issue' not in view.kwargs.keys():
+        if request.method in [SAFE_METHODS, 'POST']:
             return True
         else:
-            issue_id = view.kwargs['id_issue']
-            return Issue.objects.filter(id=issue_id, author=current_user.id).exists()
+            return lib_permissions.is_comment_author(request, view)
 
-class IsCommentAuthor(permissions.DjangoModelPermissions):
-    perms_map = {
-        'GET': [],
-        'OPTIONS': [],
-        'HEAD': [],
-        'POST': ['projects.add_comments'],
-        'PUT': ['projects.change_comments'],
-        'PATCH': ['projects.change_comments'],
-        'DELETE': ['projects.delete_comments'],
-    }
-
-    def has_permission(self, request, view,):
-        current_user = request.user
-        if 'id_comment' not in view.kwargs.keys():
-            return True
-        else:
-            comment_id = view.kwargs['id_comment']
-            return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
-
-    def has_object_permission(self, request, view, obj):
-        current_user = request.user
-        if 'id_comment' not in view.kwargs.keys():
-            return True
-        else:
-            comment_id = view.kwargs['id_comment']
-            return Comment.objects.filter(comment=comment_id, author=current_user.id).exists()
