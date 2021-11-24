@@ -62,7 +62,6 @@ class ProjectModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
         self.check_object_permissions(request, project)
-        # if IsProjectCreator or IsProjectManager !!
         project.title = request.data['title'] if 'title' in request.data.keys() else project.title
         project.description = request.data['description'] \
             if 'description' in request.data.keys() else project.description
@@ -72,7 +71,7 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.serializer_class(project)
         return Response(serializer.data)
 
-    def destroy(self, request, **kwargs):  # seul projects managers et creator !!
+    def destroy(self, request, **kwargs):
         """
         Enables the user to delete a given project and all related issues
         """
@@ -122,10 +121,18 @@ class ContributorModelViewSet(ModelViewSet):
         """
         Returns a specific contributor to a project by the user's ID
         """
-        project_id = kwargs['id_project']
-        project = lib_projects.find_obj_by_id(Project, project_id)
-        contributor_id = kwargs['id_user']
-        contributor = get_object_or_404(Contributor.objects.filter(project=project, user_id=contributor_id))
+        contributor = lib_projects.find_contributor(self.queryset, kwargs)
+        serializer = self.serializer_class(contributor)
+        return Response(serializer.data)
+
+    def update(self, request, **kwargs):
+        """
+        Updates a specific contributor (Role
+        """
+        contributor = lib_projects.find_contributor(self.queryset, kwargs)
+        self.check_object_permissions(request, contributor)
+        contributor.role = request.data['role'] if 'role' in request.data.keys() else contributor.role
+        contributor.save()
         serializer = self.serializer_class(contributor)
         return Response(serializer.data)
 
@@ -133,9 +140,7 @@ class ContributorModelViewSet(ModelViewSet):
         """
         remove users from a given project
         """
-        project_id = kwargs['id_project']
-        contributor_id = kwargs['id_user']
-        contributor = get_object_or_404(Contributor.objects.filter(project_id=project_id, user_id=contributor_id))
+        contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
         contributor.delete()
         serializer = self.serializer_class(contributor)
