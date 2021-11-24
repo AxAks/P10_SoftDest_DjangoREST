@@ -1,3 +1,4 @@
+from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
@@ -131,15 +132,16 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
-        contributor.role = request.data['role'] if 'role' in request.data.keys() else contributor.role
+        if 'role' in request.data.keys():
+            if request.data['role'] == 'Manager' and lib_projects.has_manager(contributor.project):
+                return Response("Project already has a Manager", status=status.HTTP_400_BAD_REQUEST)
+            elif request.data['role'] == 'Creator':
+                return Response("Project creator cannot be set manually", status=status.HTTP_400_BAD_REQUEST)
+            else:
+                contributor.role = request.data['role']
         contributor.save()
-        """
-        contrib_as_dict = model_to_dict(contributor) # marche pas car le user est deja dans le projet en tant que contrib
-        serializer = self.serializer_class(data=contrib_as_dict)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(contributor.project)
-        """
-        return Response(contributor.data, status=status.HTTP_204_NO_CONTENT)
+        serializer = self.serializer_class(contributor)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -147,9 +149,12 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
-        contributor.delete()
-        serializer = self.serializer_class(contributor)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if contributor.role == 'Creator':
+            return Response("Project Creator cannot be removed from project", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            contributor.delete()
+            serializer = self.serializer_class(contributor)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class IssueModelViewSet(ModelViewSet):
