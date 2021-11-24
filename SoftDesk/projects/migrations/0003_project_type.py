@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='type',
-            field=models.CharField(choices=[(1, 'Back-End'), (2, 'Front-End'), (3, 'iOS'), (4, 'Android')], default=1, max_length=1),
+            field=models.CharField(choices=[(1, 'Back-End'), (2, 'Front-End'), (3, 'iOS'), (4, 'Android')],
+                                   default=1, max_length=1),
             preserve_default=False,
         ),
     ]

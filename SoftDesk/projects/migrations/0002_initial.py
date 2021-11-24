@@ -23,12 +23,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='issue',
             name='assignee',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='issue_assignee', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='issue_assignee', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='issue',
             name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='issue_author', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='issue_author', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='issue',

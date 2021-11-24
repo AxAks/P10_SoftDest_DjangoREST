@@ -1,4 +1,3 @@
-from django.forms import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
@@ -246,7 +245,7 @@ class CommentModelViewSet(ModelViewSet):
         """
         Add a comment to a project-related issue
         """
-        user= request.user
+        user = request.user
         issue = lib_projects.find_issue(IssueModelViewSet.queryset, kwargs)
         comment = request.data
         comment_copy = comment.copy()

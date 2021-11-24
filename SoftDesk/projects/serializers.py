@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from projects.libs import lib_projects
 from projects.models import Project, Issue, Comment, Contributor
 
 
@@ -16,12 +17,9 @@ class ProjectSerializer(serializers.ModelSerializer):
             type=self.validated_data['type'],
             author=author
         )
-        already_existing_projects = [project for project
-                                     in Project.objects.filter(title=project.title, description=project.description,
-                                                               type=project.type, )]
-        if already_existing_projects:
-            raise serializers.ValidationError({'already_existing_project':
-                                                   'Exact same project already exists'})
+        if lib_projects.already_existing_project(project):
+            raise serializers.ValidationError({'already_existing_project': 'Exact same project already exists'})
+
         project.save()
         return project
 
@@ -40,15 +38,9 @@ class ContributorSerializer(serializers.ModelSerializer):
         )
 
         errors = {}
-        has_manager = Contributor.objects.filter(project=contributor.project,
-                                                 role='Manager').exists()
-        already_has_role = [contributor for contributor
-                            in Contributor.objects.filter(user=contributor.user,
-                                                          project=contributor.project)]
-        already_registered_contributors = [contributor for contributor
-                                           in Contributor.objects.filter(user=contributor.user,
-                                                                         project=contributor.project,
-                                                                         role=contributor.role)]
+        has_manager = lib_projects.has_manager(contributor.project)
+        already_has_role = lib_projects.already_has_role(contributor)
+        already_registered_contributors = lib_projects.already_registered_contributors(contributor)
 
         if contributor.role == 'Creator':
             errors['creator'] = 'Project creator cannot be added manually'

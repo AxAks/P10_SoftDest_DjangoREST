@@ -5,12 +5,28 @@ from typing import Any
 
 from rest_framework.generics import get_object_or_404
 
-from projects.models import Contributor
+from projects.models import Contributor, Project
+
+
+def already_existing_project(project):
+    return [project for project in Project.objects.filter(title=project.title,
+                                                          description=project.description,
+                                                          type=project.type)]
 
 
 def has_manager(project):
     return Contributor.objects.filter(project=project,
                                       role='Manager').exists()
+
+
+def already_has_role(contributor):
+    return [contributor for contributor
+            in Contributor.objects.filter(user=contributor.user,
+                                          project=contributor.project)]
+
+
+def already_registered_contributors(contributor):
+    return [contributor for contributor in Contributor.objects.filter(user=contributor.user, role=contributor.role)]
 
 
 def find_obj_by_id(_obj, obj_id) -> Any:

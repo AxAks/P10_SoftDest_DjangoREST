@@ -48,4 +48,3 @@ class CommentPermissions(permissions.DjangoModelPermissions):
             return True
         else:
             return lib_permissions.is_comment_author(request, view)
-

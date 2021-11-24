@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='contributor',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_contributor', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='project_contributor', to=settings.AUTH_USER_MODEL),
         ),
     ]
