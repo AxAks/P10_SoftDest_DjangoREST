@@ -51,7 +51,7 @@ class ProjectModelViewSet(ModelViewSet):
         Returns a specific project by ID
         """
         project_id = kwargs['id_project']
-        project = lib_projects.find_obj_by_id(Project, project_id)
+        project = get_object_or_404(self.queryset.filter(contributor__user=request.user.id, id=project_id))
         serializer = self.serializer_class(project)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
