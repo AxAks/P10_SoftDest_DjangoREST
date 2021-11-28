@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import environment_variables
 import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d0(hw)an%6w0pazy!j2hl!a090y0w7-)9uga6r90kb)s_kw!&4'
+SECRET_KEY = environment_variables.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost']
 
