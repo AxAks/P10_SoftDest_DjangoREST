@@ -1,3 +1,4 @@
 .idea/
 venv/
 __pycache__/
+environment_variables.py
