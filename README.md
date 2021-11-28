@@ -1,7 +1,7 @@
-# P10_SoftDest_DjangoREST
+# P10_SoftDesk_DjangoREST
 Study project for Django REST API Framework
 
-#(A REDIGER !!!)
+#(A RÉDIGER !!!)
 
 ## Chapters
 
