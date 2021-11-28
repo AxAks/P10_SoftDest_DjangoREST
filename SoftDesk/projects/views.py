@@ -62,9 +62,12 @@ class ProjectModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
         self.check_object_permissions(request, project)
-        serializer = self.serializer_class(project, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.update(project, serializer.validated_data)
+        project.title = request.data['title'] if 'title' in request.data.keys() else project.title
+        project.description = request.data['description'] \
+            if 'description' in request.data.keys() else project.description
+        project.type = request.data['type'] if 'type' in request.data.keys() else project.type
+
+        project.save()
         serializer = self.serializer_class(project)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -128,11 +131,14 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
-
-        serializer = self.serializer_class(contributor, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.update(contributor, serializer.validated_data)
-
+        if 'role' in request.data.keys():
+            if request.data['role'] == 'Manager' and lib_projects.has_manager(contributor.project):
+                return Response("Project already has a Manager", status=status.HTTP_400_BAD_REQUEST)
+            elif request.data['role'] == 'Creator':
+                return Response("Project creator cannot be set manually", status=status.HTTP_400_BAD_REQUEST)
+            else:
+                contributor.role = request.data['role']
+        contributor.save()
         serializer = self.serializer_class(contributor)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -195,11 +201,15 @@ class IssueModelViewSet(ModelViewSet):
         """
         issue = lib_projects.find_issue(self.queryset, kwargs)
         self.check_object_permissions(request, issue)
+        issue.title = request.data['title'] if 'title' in request.data.keys() else issue.title
+        issue.description = request.data['description'] \
+            if 'description' in request.data.keys() else issue.description
+        issue.tag = request.data['tag'] if 'tag' in request.data.keys() else issue.tag
+        issue.priority = request.data['priority'] if 'priority' in request.data.keys() else issue.priority
+        issue.status = request.data['status'] if 'status' in request.data.keys() else issue.status
+        issue.assignee = request.data['assignee'] if 'assignee' in request.data.keys() else issue.assignee
 
-        serializer = self.serializer_class(issue, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.update(issue, serializer.validated_data)
-
+        issue.save()
         serializer = self.serializer_class(issue)
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
@@ -259,10 +269,8 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment = lib_projects.find_comment(self.queryset, kwargs)
         self.check_object_permissions(request, comment)
-
-        serializer = self.serializer_class(comment, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.update(comment, serializer.validated_data)
+        comment.description = request.data['description'] \
+            if 'description' in request.data.keys() else comment.description
 
         comment.save()
         serializer = self.serializer_class(comment)
