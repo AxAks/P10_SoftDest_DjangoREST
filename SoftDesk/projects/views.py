@@ -43,8 +43,8 @@ class ProjectModelViewSet(ModelViewSet):
         project_obj = serializer.save(author=user)
         project_creator = Contributor(user=user, project=project_obj, role='Creator')
         project_creator.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serialized_project = self.serializer_class(project_obj)
+        return Response(serialized_project.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
         """
@@ -73,9 +73,9 @@ class ProjectModelViewSet(ModelViewSet):
             return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer.update(project, serializer.validated_data)
-            serializer = self.serializer_class(project)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            project_obj = serializer.update(project, serializer.validated_data)
+            serialized_project = self.serializer_class(project_obj)
+            return Response(serialized_project.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -120,8 +120,9 @@ class ContributorModelViewSet(ModelViewSet):
         contributor_copy['project'] = project
         serializer = self.serializer_class(data=contributor_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save(project)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        contributor_obj = serializer.save(project)
+        serialized_contributor = self.serializer_class(contributor_obj)
+        return Response(serialized_contributor.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
         """
@@ -146,9 +147,11 @@ class ContributorModelViewSet(ModelViewSet):
             return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer.update(contributor, serializer.validated_data)
-            serializer = self.serializer_class(contributor)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            contributor_obj = serializer.update(contributor, serializer.validated_data)
+            serialized_contributor = self.serializer_class(contributor_obj)
+            return Response(serialized_contributor.data, status=status.HTTP_204_NO_CONTENT)
+
+
 
     def destroy(self, request, **kwargs):
         """
@@ -192,8 +195,9 @@ class IssueModelViewSet(ModelViewSet):
         issue_copy['author'], issue_copy['project'] = user, project
         serializer = self.serializer_class(data=issue_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user, project)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        issue_obj = serializer.save(user, project)
+        serialized_issue = self.serializer_class(issue_obj)
+        return Response(serialized_issue.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
         """
@@ -220,9 +224,9 @@ class IssueModelViewSet(ModelViewSet):
             return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer.update(issue, serializer.validated_data)
-            serializer = self.serializer_class(issue)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            issue_obj = serializer.update(issue, serializer.validated_data)
+            serialized_issue = self.serializer_class(issue_obj)
+            return Response(serialized_issue.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -263,8 +267,9 @@ class CommentModelViewSet(ModelViewSet):
         comment_copy['author'], comment_copy['issue'] = user.id, issue.id
         serializer = self.serializer_class(data=comment_copy)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user, issue)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        comment_obj = serializer.save(user, issue)
+        serialized_comment = self.serializer_class(comment_obj)
+        return Response(serialized_comment.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
         """
@@ -291,9 +296,9 @@ class CommentModelViewSet(ModelViewSet):
             return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer.update(comment, serializer.validated_data)
-            serializer = self.serializer_class(comment)
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            comment_obj = serializer.update(comment, serializer.validated_data)
+            serialized_comment = self.serializer_class(comment_obj)
+            return Response(serialized_comment.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
