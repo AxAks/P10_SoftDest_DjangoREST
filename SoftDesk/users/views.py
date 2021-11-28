@@ -3,7 +3,7 @@ from django.contrib.auth import user_logged_in
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -57,12 +57,3 @@ class AuthenticationAPIView(APIView):
         except KeyError:
             res = {'error': 'please provide valid username and password'}
             return Response(res)
-
-
-class ListUsersModelViewSet(ModelViewSet):
-    """
-    Enables an authenticated user to list all other registered users
-    """
-    permission_classes = (IsAuthenticated,)
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
