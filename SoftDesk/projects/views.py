@@ -62,11 +62,20 @@ class ProjectModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         project = lib_projects.find_obj_by_id(Project, project_id)
         self.check_object_permissions(request, project)
+        uneditable_fields = {}
+        if 'author' in request.data.keys():
+            uneditable_fields['author'] = request.data['author']
+        if 'created_time' in request.data.keys():
+            uneditable_fields['created_time'] = request.data['created_time']
         serializer = self.serializer_class(project, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.update(project, serializer.validated_data)
-        serializer = self.serializer_class(project)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if uneditable_fields:
+            return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer.update(project, serializer.validated_data)
+            serializer = self.serializer_class(project)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -128,11 +137,18 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         self.check_object_permissions(request, contributor)
+        uneditable_fields = {}
+        if 'project' in request.data.keys():
+            uneditable_fields['project'] = request.data['project']
         serializer = self.serializer_class(contributor, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.update(contributor, serializer.validated_data)
-        serializer = self.serializer_class(contributor)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if uneditable_fields:
+            return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer.update(contributor, serializer.validated_data)
+            serializer = self.serializer_class(contributor)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -193,11 +209,20 @@ class IssueModelViewSet(ModelViewSet):
         """
         issue = lib_projects.find_issue(self.queryset, kwargs)
         self.check_object_permissions(request, issue)
+        uneditable_fields = {}
+        if 'project' in request.data.keys():
+            uneditable_fields['project'] = request.data['project']
+        if 'author' in request.data.keys():
+            uneditable_fields['author'] = request.data['author']
         serializer = self.serializer_class(issue, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.update(issue, serializer.validated_data)
-        serializer = self.serializer_class(issue)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if uneditable_fields:
+            return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer.update(issue, serializer.validated_data)
+            serializer = self.serializer_class(issue)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
@@ -255,11 +280,20 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment = lib_projects.find_comment(self.queryset, kwargs)
         self.check_object_permissions(request, comment)
+        uneditable_fields = {}
+        if 'issue' in request.data.keys():
+            uneditable_fields['issue'] = request.data['issue']
+        if 'author' in request.data.keys():
+            uneditable_fields['author'] = request.data['author']
         serializer = self.serializer_class(comment, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.update(comment, serializer.validated_data)
-        serializer = self.serializer_class(comment)
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        if uneditable_fields:
+            return Response(f'{list(uneditable_fields.keys())}: cannot be modified',
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer.update(comment, serializer.validated_data)
+            serializer = self.serializer_class(comment)
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
         """
