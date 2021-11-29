@@ -1,8 +1,6 @@
 # P10_SoftDest_DjangoREST
 Study project for Django REST API Framework
 
-#(A REDIGER !!!)
-
 ## Chapters
 
 1. [Presentation](#presentation)
@@ -101,57 +99,110 @@ Definition of Endpoints:
 
 Users:
 - user registration (POST)
-URL -> /signup/ 
+URL -> /signup/
+
+username : Username
+first_name: First Name
+last_name: Last Name
+email: Email Address
+password: Password
+password2: Password Confirmation
+
 - login (POST)
 URL -> /login/
-- user listing (GET)
-URL -> /users/
+
+username: Usename
+password: Password
 
 Projects:
 - create project (POST)
 URL -> /projects/
+
+title : Title
+description: Description
+type: Type (Back-End/Front-End/iOS/Android)
+Author: Automatically set to the current user
+time_created: Automatically set
+
+
 - list projects (GET)
 URL -> /projects/
+
+
 - find project (GET)
 URL -> /projects/{id_project}
+
 - edit project (PUT)
 URL -> /projects/{id_project}
+title : Title
+description: Description
+type: Type(Back-End/Front-End/iOS/Android)
+
 - delete project (DELETE)
 URL -> /projects/{id_project}
 
 Contributors:
 - add contributor (POST)
 URL -> /projects/{id_project}/users/
+user : User ID
+role: Role (Manager/Author)
+
 - list project contributors (GET)
 URL -> /projects/{id_project}/users/
+
 - find contributor (GET)
 URL -> /projects/{id_project}/users/{id_user}
+
 - edit contributor (PUT)
 URL -> /projects/{id_project}/users/{id_user}
+role: Role (Manager/Author)
+
 - remove contributor (DELETE)
 URL -> /projects/{id_project}/users/{id_user}
 
 Issues:
 - create issue (POST)
 URL -> /projects/{id_project}/issues/
+title: Title
+description: Description
+tag : Tag
+priority: Priority
+status: Status
+assignee: Assignee
+
 - list project issues (GET)
 URL -> /projects/{id_project}/issues/
+
 - find issue (GET)
 URL -> /projects/{id_project}/issues/{id_issue}
+
 - edit issue (PUT)
 URL -> /projects/{id_project}/issues/{id_issue}
+title: Title
+description: Description
+tag : Tag
+priority: Priority
+status: Status
+assignee: Assignee
+
 - delete issue (DELETE)
 URL -> /projects/{id_project}/issues/{id_issue}
 
 Comments:
 - create comment (POST)
 URL -> /projects/{id_project}/issues/{id_issue}/comments/
+description: Description
+
 - list issue comments (GET)
 URL -> /projects/{id_project}/issues/{id_issue}/comments/
+
 - find comment (GET)
 URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
+
 - edit comment (PUT)
 URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
+description: Description
+
 - delete comment (DELETE)
 URL -> /projects/{id_project}/issues/{id_issue}/comments/{id_comment}
 ***
