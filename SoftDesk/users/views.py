@@ -51,9 +51,8 @@ class AuthenticationAPIView(APIView):
                 except Exception as e:
                     raise e
             else:
-                res = {
-                    'error': 'can not authenticate with the given credentials or the account has been deactivated'}
-                return Response(res, status=status.HTTP_403_FORBIDDEN)
+                return Response({'error': 'can not authenticate with the given credentials'
+                                          ' or the account has been deactivated'},
+                                status=status.HTTP_403_FORBIDDEN)
         except KeyError:
-            res = {'error': 'please provide valid username and password'}
-            return Response(res)
+            return Response({'error': 'please provide valid username and password'})
