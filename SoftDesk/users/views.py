@@ -18,7 +18,7 @@ from users.models import CustomUser
 from users.serializers import UserSerializer, UserLoginSerializer
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('users_app')
 
 
 class CreateUserModelViewSet(ModelViewSet):

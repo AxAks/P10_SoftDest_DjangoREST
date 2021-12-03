@@ -13,7 +13,7 @@ from projects.serializers import ProjectSerializer, ContributorSerializer, Issue
 
 from projects.permissions import ProjectPermissions, ContributorPermissions, IssuePermissions, CommentPermissions
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('projects_app')
 
 
 class ProjectModelViewSet(ModelViewSet):

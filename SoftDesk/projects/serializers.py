@@ -1,7 +1,11 @@
+import logging
+
 from rest_framework import serializers
 
 from projects.libs import lib_projects
 from projects.models import Project, Issue, Comment, Contributor
+
+logger = logging.getLogger('projects_app')
 
 
 class ProjectSerializer(serializers.ModelSerializer):

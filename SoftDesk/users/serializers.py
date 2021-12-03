@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from users.models import CustomUser
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class UserSerializer(serializers.ModelSerializer):
