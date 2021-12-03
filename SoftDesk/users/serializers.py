@@ -1,6 +1,10 @@
+import logging
+
 from rest_framework import serializers
 
 from users.models import CustomUser
+
+logger = logging.getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,6 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': 'Passwords must match'})
         custom_user.set_password(password)
         custom_user.save()
+        logger.info(f'New user registered : {custom_user.username}')
         return custom_user
 
 

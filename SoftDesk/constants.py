@@ -10,3 +10,6 @@ ISSUE_PRIORITIES = [('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')]
 ISSUE_STATUSES = [('Todo', 'Todo'), ('Handled', 'Handled'), ('Closed',  'Closed')]
 
 PROJECT_ADMIN = ['Manager', 'Creator']
+
+
+UNSUCCESSFUL_LOGIN_MSG = 'Unsuccessful connection attempt'
