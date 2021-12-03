@@ -49,7 +49,8 @@ class ProjectModelViewSet(ModelViewSet):
         project_creator = Contributor(user=user, project=project_obj, role='Creator')
         project_creator.save()
         serialized_project = self.serializer_class(project_obj)
-        logger.info(f"(Success) Projects: User {user.username} created the project {project_obj.title}")
+        logger.info(f"(Success) Projects: User {user.username} created "
+                    f"the project #{project_obj.id}: {project_obj.title}")
         return Response(serialized_project.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
