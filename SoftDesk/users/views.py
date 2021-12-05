@@ -13,7 +13,6 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework_jwt.serializers import jwt_payload_handler
 
 from SoftDesk import settings
-from constants import UNSUCCESSFUL_LOGIN_MSG
 from users.models import CustomUser
 from users.serializers import UserSerializer, UserLoginSerializer
 
