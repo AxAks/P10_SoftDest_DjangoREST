@@ -204,7 +204,7 @@ class IssueModelViewSet(ModelViewSet):
         Lists all issue of a given project
         """
         project_id = kwargs['id_project']
-        issues = get_list_or_404(self.queryset.filter(project_id))
+        issues = get_list_or_404(self.queryset.filter(project=project_id))
         serializer = self.serializer_class(issues, many=True)
         logger.info(f"(Success) Issues: User {request.user.username} requested the list of issues for "
                     f"project #{project_id}")
@@ -292,6 +292,9 @@ class CommentModelViewSet(ModelViewSet):
         issue = lib_projects.find_issue(IssueModelViewSet.queryset, kwargs)
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
+        logger.info(f"(Success) Comments: User {request.user.username} requested the list of comments for "
+                    f"Issue #{issue.id} of "
+                    f"project #{issue.project.id}")
         return Response({'comments': serializer.data}, status=status.HTTP_200_OK)
 
     def create(self, request, **kwargs):
@@ -307,6 +310,10 @@ class CommentModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         comment_obj = serializer.save(user, issue)
         serialized_comment = self.serializer_class(comment_obj)
+        logger.info(f"(Success) Comments: User {user.username} "
+                    f"created the comment #{comment_obj.id}: {comment_obj.description} "
+                    f"on issue #{comment_obj.issue.id} "
+                    f"in project #{comment_obj.issue.project.id}: {comment_obj.issue.project.title}")
         return Response(serialized_comment.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
@@ -315,6 +322,10 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment = lib_projects.find_comment(self.queryset, kwargs)
         serializer = self.serializer_class(comment)
+        logger.info(f"(Success) Comments: User {request.user.username} "
+                    f"requested comment #{comment.id}: {comment.description} "
+                    f"of issue #{comment.issue.id}: {comment.issue.title} "
+                    f"on project #{comment.issue.project.id}: {comment.issue.project.title}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
@@ -336,6 +347,10 @@ class CommentModelViewSet(ModelViewSet):
         else:
             comment_obj = serializer.update(comment, serializer.validated_data)
             serialized_comment = self.serializer_class(comment_obj)
+            logger.info(f"(Success) Comments: User {request.user.username} "
+                        f"updated comment #{comment.id}: {comment.description} "
+                        f"of issue #{comment.issue.id}: {comment.issue.title} "
+                        f"on project #{comment.issue.project.id}: {comment.issue.project.title}")
             return Response(serialized_comment.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
