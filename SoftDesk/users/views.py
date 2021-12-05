@@ -59,10 +59,10 @@ class AuthenticationAPIView(APIView):
                 except Exception as e:
                     raise e
             else:
-                logger.warning(UNSUCCESSFUL_LOGIN_MSG)
+                logger.warning({'users': 'Unsuccessful connection attempt'})
                 return Response({'error': 'can not authenticate with the given credentials'
                                           ' or the account has been deactivated'},
                                 status=status.HTTP_403_FORBIDDEN)
         except KeyError:
-            logger.warning(UNSUCCESSFUL_LOGIN_MSG)
+            logger.warning({'users': 'Unsuccessful connection attempt'})
             return Response({'error': 'please provide valid username and password'})

@@ -50,7 +50,7 @@ class ProjectModelViewSet(ModelViewSet):
         project_creator.save()
         serialized_project = self.serializer_class(project_obj)
         logger.info(f"(Success) Projects: User {user.username} created "
-                    f"the project #{project_obj.id}: {project_obj.title}")
+                    f"the project #{project_obj.id}")
         return Response(serialized_project.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
@@ -61,7 +61,7 @@ class ProjectModelViewSet(ModelViewSet):
         project = get_object_or_404(self.queryset.filter(contributor__user=request.user.id, id=project_id))
         serializer = self.serializer_class(project)
         logger.info(f"(Success) Projects: User {request.user.username} "
-                    f"requested project #{project.id}: {project.title}")
+                    f"requested project #{project.id}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
@@ -85,7 +85,7 @@ class ProjectModelViewSet(ModelViewSet):
             project_obj = serializer.update(project, serializer.validated_data)
             serialized_project = self.serializer_class(project_obj)
             logger.info(f"(Success) Projects: User {project.author.username} updated "
-                        f"project #{project.id}: {project_obj.title}")
+                        f"project #{project.id}")
             return Response(serialized_project.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
@@ -98,7 +98,7 @@ class ProjectModelViewSet(ModelViewSet):
         project.delete()
         serializer = self.serializer_class(project)
         logger.info(f"(Success) Projects: User {project.author.username} deleted "
-                    f"project #{project.id}: {project.title}")
+                    f"project #{project.id}")
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
@@ -150,7 +150,7 @@ class ContributorModelViewSet(ModelViewSet):
         serializer = self.serializer_class(contributor)
         logger.info(f"(Success) Contributors: User {request.user.username} "
                     f"requested Contributor {contributor.user.username} "
-                    f"of project #{contributor.project.id}: {contributor.project.title}")
+                    f"of project #{contributor.project.id}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
@@ -171,7 +171,7 @@ class ContributorModelViewSet(ModelViewSet):
             contributor_obj = serializer.update(contributor, serializer.validated_data)
             serialized_contributor = self.serializer_class(contributor_obj)
             logger.info(f"(Success) Contributors: User {request.user.username} updated {contributor.user.username}'s "
-                        f"role in project #{contributor.project.id}: {contributor.project.title}")
+                        f"role in project #{contributor.project.id}")
             return Response(serialized_contributor.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
@@ -187,7 +187,7 @@ class ContributorModelViewSet(ModelViewSet):
             serializer = self.serializer_class(contributor)
             logger.info(f"(Success) Contributors: User {request.user.username} "
                         f"removed user {contributor.user.username} from "
-                        f"project #{contributor.project.id}: {contributor.project.title}")
+                        f"project #{contributor.project.id}")
             return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
@@ -225,8 +225,8 @@ class IssueModelViewSet(ModelViewSet):
         issue_obj = serializer.save(user, project)
         serialized_issue = self.serializer_class(issue_obj)
         logger.info(f"(Success) Issues: User {user.username} "
-                    f"created the issue #{issue_obj.id}: {issue_obj.title} "
-                    f"in project #{issue_obj.project.id}: {issue_obj.project.title}")
+                    f"created the issue #{issue_obj.id} "
+                    f"in project #{issue_obj.project.id}")
         return Response(serialized_issue.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
@@ -236,8 +236,8 @@ class IssueModelViewSet(ModelViewSet):
         issue = lib_projects.find_issue(self.queryset, kwargs)
         serializer = self.serializer_class(issue)
         logger.info(f"(Success) Issues: User {request.user.username} "
-                    f"requested issue #{issue.id}: {issue.title} "
-                    f"of project #{issue.project.id}: {issue.project.title}")
+                    f"requested issue #{issue.id} "
+                    f"of project #{issue.project.id}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
@@ -259,8 +259,8 @@ class IssueModelViewSet(ModelViewSet):
         else:
             issue_obj = serializer.update(issue, serializer.validated_data)
             serialized_issue = self.serializer_class(issue_obj)
-            logger.info(f"(Success) Issues: User {request.user.username} updated issue #{issue.id}: {issue.title} "
-                        f" of project #{issue.project.id}: {issue.project.title}")
+            logger.info(f"(Success) Issues: User {request.user.username} updated issue #{issue.id} "
+                        f" of project #{issue.project.id}")
             return Response(serialized_issue.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
@@ -273,7 +273,7 @@ class IssueModelViewSet(ModelViewSet):
         serializer = self.serializer_class(issue)
         logger.info(f"(Success) Issues: User {request.user.username} "
                     f"deleted issue #{issue.id}: {issue.title} in "
-                    f"project #{issue.project.id}: {issue.project.title}")
+                    f"project #{issue.project.id}")
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
@@ -311,9 +311,9 @@ class CommentModelViewSet(ModelViewSet):
         comment_obj = serializer.save(user, issue)
         serialized_comment = self.serializer_class(comment_obj)
         logger.info(f"(Success) Comments: User {user.username} "
-                    f"created the comment #{comment_obj.id}: {comment_obj.description} "
+                    f"created the comment #{comment_obj.id} "
                     f"on issue #{comment_obj.issue.id} "
-                    f"in project #{comment_obj.issue.project.id}: {comment_obj.issue.project.title}")
+                    f"in project #{comment_obj.issue.project.id}")
         return Response(serialized_comment.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, **kwargs):
@@ -323,9 +323,9 @@ class CommentModelViewSet(ModelViewSet):
         comment = lib_projects.find_comment(self.queryset, kwargs)
         serializer = self.serializer_class(comment)
         logger.info(f"(Success) Comments: User {request.user.username} "
-                    f"requested comment #{comment.id}: {comment.description} "
-                    f"of issue #{comment.issue.id}: {comment.issue.title} "
-                    f"on project #{comment.issue.project.id}: {comment.issue.project.title}")
+                    f"requested comment #{comment.id} "
+                    f"of issue #{comment.issue.id} "
+                    f"on project #{comment.issue.project.id}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, **kwargs):
@@ -348,9 +348,9 @@ class CommentModelViewSet(ModelViewSet):
             comment_obj = serializer.update(comment, serializer.validated_data)
             serialized_comment = self.serializer_class(comment_obj)
             logger.info(f"(Success) Comments: User {request.user.username} "
-                        f"updated comment #{comment.id}: {comment.description} "
-                        f"of issue #{comment.issue.id}: {comment.issue.title} "
-                        f"on project #{comment.issue.project.id}: {comment.issue.project.title}")
+                        f"updated comment #{comment.id} "
+                        f"of issue #{comment.issue.id} "
+                        f"on project #{comment.issue.project.id}")
             return Response(serialized_comment.data, status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, **kwargs):
@@ -362,7 +362,7 @@ class CommentModelViewSet(ModelViewSet):
         comment.delete()
         serializer = self.serializer_class(comment)
         logger.info(f"(Success) Comments: User {request.user.username} "
-                    f"deleted comment #{comment.id}: {comment.description} of "
-                    f"issue #{comment.issue.id}: {comment.issue.title} "
-                    f"(project #{comment.issue.project.id}: {comment.issue.project.title}")
+                    f"deleted comment #{comment.id} of "
+                    f"issue #{comment.issue.id} "
+                    f"(project #{comment.issue.project.id}")
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
