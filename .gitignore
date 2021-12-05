@@ -3,3 +3,4 @@ venv/
 __pycache__/
 environment_variables.py
 logs.log
+db.sqlite3
