@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import check_password
 
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -65,3 +65,17 @@ class AuthenticationAPIView(APIView):
         except KeyError:
             logger.warning({'users': 'Unsuccessful connection attempt'})
             return Response({'error': 'please provide valid username and password'})
+
+
+class PersonalInfosModelViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+    queryset = CustomUser.objects.all()
+    """
+    Endpoint that return the personal infos of the current user
+    """
+    def retrieve(self, request, *args, **kwargs):
+        user = get_object_or_404(self.queryset.filter(id=request.user.id))
+        serializer = self.serializer_class(user)
+
+        return Response({'current_user': serializer.data}, status=status.HTTP_200_OK)

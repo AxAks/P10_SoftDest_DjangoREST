@@ -114,6 +114,12 @@ URL -> /login/
 username: Usename
 password: Password
 
+- Personal information (GET)
+URL -> /my_infos/
+
+username: Usename
+password: Password
+
 Projects:
 - create project (POST)
 URL -> /projects/
