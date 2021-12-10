@@ -114,6 +114,11 @@ URL -> /login/
 username: Usename
 password: Password
 
+- token refresh (POST)
+URL -> /token_refresh/
+
+token: current token
+
 - Personal information (GET)
 URL -> /my_infos/
 
