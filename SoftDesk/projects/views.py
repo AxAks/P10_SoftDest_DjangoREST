@@ -22,7 +22,7 @@ class ProjectModelViewSet(ModelViewSet):
     """
     permission_classes = (ProjectPermissions,)
     serializer_class = ProjectSerializer
-    queryset = Project.objects.order_by('-created_time')
+    queryset = Project.objects.all()
 
     def list(self, request, *args, **kwargs):
         """
@@ -32,8 +32,9 @@ class ProjectModelViewSet(ModelViewSet):
         projects = get_list_or_404(self.queryset.filter(contributor__user=user.id))
 
         serializer = self.serializer_class(projects, many=True)
+        res = Response({'Projects': serializer.data}, status=status.HTTP_200_OK)
         logger.info(f"(Success) Projects: User {user.username} requested the list of projects")
-        return Response({'Projects': serializer.data}, status=status.HTTP_200_OK)
+        return res
 
     def create(self, request, *args, **kwargs):
         """
@@ -49,9 +50,10 @@ class ProjectModelViewSet(ModelViewSet):
         project_creator = Contributor(user=user, project=project_obj, role='Creator')
         project_creator.save()
         serialized_project = self.serializer_class(project_obj)
+        res = Response(serialized_project.data, status=status.HTTP_201_CREATED)
         logger.info(f"(Success) Projects: User {user.username} created "
                     f"the project #{project_obj.id}")
-        return Response(serialized_project.data, status=status.HTTP_201_CREATED)
+        return res
 
     def retrieve(self, request, **kwargs):
         """
@@ -62,7 +64,10 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.serializer_class(project)
         logger.info(f"(Success) Projects: User {request.user.username} "
                     f"requested project #{project.id}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        res = Response(serializer.data, status=status.HTTP_200_OK)
+        logger.info(f"(Success) Projects: User {request.user.username} "
+                    f"requested project #{project.id}")
+        return res
 
     def update(self, request, **kwargs):
         """
@@ -84,9 +89,10 @@ class ProjectModelViewSet(ModelViewSet):
         else:
             project_obj = serializer.update(project, serializer.validated_data)
             serialized_project = self.serializer_class(project_obj)
+            res = Response(serialized_project.data, status=status.HTTP_204_NO_CONTENT)
             logger.info(f"(Success) Projects: User {project.author.username} updated "
                         f"project #{project.id}")
-            return Response(serialized_project.data, status=status.HTTP_204_NO_CONTENT)
+            return res
 
     def destroy(self, request, **kwargs):
         """
@@ -97,9 +103,10 @@ class ProjectModelViewSet(ModelViewSet):
         self.check_object_permissions(request, project)
         project.delete()
         serializer = self.serializer_class(project)
+        res = Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
         logger.info(f"(Success) Projects: User {project.author.username} deleted "
                     f"project #{project.id}")
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        return res
 
 
 class ContributorModelViewSet(ModelViewSet):
@@ -108,7 +115,7 @@ class ContributorModelViewSet(ModelViewSet):
     """
     permission_classes = (ContributorPermissions,)
     serializer_class = ContributorSerializer
-    queryset = Contributor.objects.all().order_by('-project', 'user')
+    queryset = Contributor.objects.all()
 
     def list(self, request, **kwargs):
         """
@@ -118,9 +125,10 @@ class ContributorModelViewSet(ModelViewSet):
         lib_projects.find_obj_by_id(Project, project_id)
         contributors = get_list_or_404(self.queryset.filter(project_id=project_id))
         serializer = self.serializer_class(contributors, many=True)
+        res = Response({'contributors': serializer.data}, status=status.HTTP_200_OK)
         logger.info(f"(Success) Contributors: User {request.user.username} requested the list of contributors for "
                     f"project #{project_id}")
-        return Response({'contributors': serializer.data}, status=status.HTTP_200_OK)
+        return res
 
     def create(self, request, **kwargs):
         """
@@ -137,10 +145,11 @@ class ContributorModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         contributor_obj = serializer.save(project)
         serialized_contributor = self.serializer_class(contributor_obj)
+        res = Response(serialized_contributor.data, status=status.HTTP_201_CREATED)
         logger.info(f"(Success) Contributors: User {request.user.username} added user {contributor_obj.user.username} "
                     f" to the list of contributors "
                     f"for project #{contributor_obj.project.id}: {contributor_obj.project.title}")
-        return Response(serialized_contributor.data, status=status.HTTP_201_CREATED)
+        return res
 
     def retrieve(self, request, **kwargs):
         """
@@ -148,10 +157,11 @@ class ContributorModelViewSet(ModelViewSet):
         """
         contributor = lib_projects.find_contributor(self.queryset, kwargs)
         serializer = self.serializer_class(contributor)
+        res = Response(serializer.data, status=status.HTTP_200_OK)
         logger.info(f"(Success) Contributors: User {request.user.username} "
                     f"requested Contributor {contributor.user.username} "
                     f"of project #{contributor.project.id}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return res
 
     def update(self, request, **kwargs):
         """
@@ -170,9 +180,10 @@ class ContributorModelViewSet(ModelViewSet):
         else:
             contributor_obj = serializer.update(contributor, serializer.validated_data)
             serialized_contributor = self.serializer_class(contributor_obj)
+            res = Response(serialized_contributor.data, status=status.HTTP_204_NO_CONTENT)
             logger.info(f"(Success) Contributors: User {request.user.username} updated {contributor.user.username}'s "
                         f"role in project #{contributor.project.id}")
-            return Response(serialized_contributor.data, status=status.HTTP_204_NO_CONTENT)
+            return res
 
     def destroy(self, request, **kwargs):
         """
@@ -185,10 +196,11 @@ class ContributorModelViewSet(ModelViewSet):
         else:
             contributor.delete()
             serializer = self.serializer_class(contributor)
+            res = Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
             logger.info(f"(Success) Contributors: User {request.user.username} "
                         f"removed user {contributor.user.username} from "
                         f"project #{contributor.project.id}")
-            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+            return res
 
 
 class IssueModelViewSet(ModelViewSet):
@@ -197,7 +209,7 @@ class IssueModelViewSet(ModelViewSet):
     """
     permission_classes = (IssuePermissions,)
     serializer_class = IssueSerializer
-    queryset = Issue.objects.all().order_by('-created_time')
+    queryset = Issue.objects.all()
 
     def list(self, request, **kwargs):
         """
@@ -206,9 +218,10 @@ class IssueModelViewSet(ModelViewSet):
         project_id = kwargs['id_project']
         issues = get_list_or_404(self.queryset.filter(project=project_id))
         serializer = self.serializer_class(issues, many=True)
+        res = Response({'issues': serializer.data}, status=status.HTTP_200_OK)
         logger.info(f"(Success) Issues: User {request.user.username} requested the list of issues for "
                     f"project #{project_id}")
-        return Response({'issues': serializer.data}, status=status.HTTP_200_OK)
+        return res
 
     def create(self, request, **kwargs):
         """
@@ -224,10 +237,11 @@ class IssueModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         issue_obj = serializer.save(user, project)
         serialized_issue = self.serializer_class(issue_obj)
+        res = Response(serialized_issue.data, status=status.HTTP_201_CREATED)
         logger.info(f"(Success) Issues: User {user.username} "
                     f"created the issue #{issue_obj.id} "
                     f"in project #{issue_obj.project.id}")
-        return Response(serialized_issue.data, status=status.HTTP_201_CREATED)
+        return res
 
     def retrieve(self, request, **kwargs):
         """
@@ -235,10 +249,11 @@ class IssueModelViewSet(ModelViewSet):
         """
         issue = lib_projects.find_issue(self.queryset, kwargs)
         serializer = self.serializer_class(issue)
+        res = Response(serializer.data, status=status.HTTP_200_OK)
         logger.info(f"(Success) Issues: User {request.user.username} "
                     f"requested issue #{issue.id} "
                     f"of project #{issue.project.id}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return res
 
     def update(self, request, **kwargs):
         """
@@ -259,9 +274,10 @@ class IssueModelViewSet(ModelViewSet):
         else:
             issue_obj = serializer.update(issue, serializer.validated_data)
             serialized_issue = self.serializer_class(issue_obj)
+            res = Response(serialized_issue.data, status=status.HTTP_204_NO_CONTENT)
             logger.info(f"(Success) Issues: User {request.user.username} updated issue #{issue.id} "
                         f" of project #{issue.project.id}")
-            return Response(serialized_issue.data, status=status.HTTP_204_NO_CONTENT)
+            return res
 
     def destroy(self, request, **kwargs):
         """
@@ -271,10 +287,11 @@ class IssueModelViewSet(ModelViewSet):
         self.check_object_permissions(request, issue)
         issue.delete()
         serializer = self.serializer_class(issue)
+        res = Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
         logger.info(f"(Success) Issues: User {request.user.username} "
                     f"deleted issue #{issue.id}: {issue.title} in "
                     f"project #{issue.project.id}")
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        return res
 
 
 class CommentModelViewSet(ModelViewSet):
@@ -283,7 +300,7 @@ class CommentModelViewSet(ModelViewSet):
     """
     permission_classes = (CommentPermissions,)
     serializer_class = CommentSerializer
-    queryset = Comment.objects.all().order_by('-created_time')
+    queryset = Comment.objects.all()
 
     def list(self, request, **kwargs):
         """
@@ -292,10 +309,11 @@ class CommentModelViewSet(ModelViewSet):
         issue = lib_projects.find_issue(IssueModelViewSet.queryset, kwargs)
         comments = get_list_or_404(self.queryset.filter(issue=issue))
         serializer = self.serializer_class(comments, many=True)
+        res = Response({'comments': serializer.data}, status=status.HTTP_200_OK)
         logger.info(f"(Success) Comments: User {request.user.username} requested the list of comments for "
                     f"Issue #{issue.id} of "
                     f"project #{issue.project.id}")
-        return Response({'comments': serializer.data}, status=status.HTTP_200_OK)
+        return res
 
     def create(self, request, **kwargs):
         """
@@ -310,11 +328,12 @@ class CommentModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         comment_obj = serializer.save(user, issue)
         serialized_comment = self.serializer_class(comment_obj)
+        res = Response(serialized_comment.data, status=status.HTTP_201_CREATED)
         logger.info(f"(Success) Comments: User {user.username} "
                     f"created the comment #{comment_obj.id} "
                     f"on issue #{comment_obj.issue.id} "
                     f"in project #{comment_obj.issue.project.id}")
-        return Response(serialized_comment.data, status=status.HTTP_201_CREATED)
+        return res
 
     def retrieve(self, request, **kwargs):
         """
@@ -322,11 +341,12 @@ class CommentModelViewSet(ModelViewSet):
         """
         comment = lib_projects.find_comment(self.queryset, kwargs)
         serializer = self.serializer_class(comment)
+        res = Response(serializer.data, status=status.HTTP_200_OK)
         logger.info(f"(Success) Comments: User {request.user.username} "
                     f"requested comment #{comment.id} "
                     f"of issue #{comment.issue.id} "
                     f"on project #{comment.issue.project.id}")
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return res
 
     def update(self, request, **kwargs):
         """
@@ -347,11 +367,12 @@ class CommentModelViewSet(ModelViewSet):
         else:
             comment_obj = serializer.update(comment, serializer.validated_data)
             serialized_comment = self.serializer_class(comment_obj)
+            res = Response(serialized_comment.data, status=status.HTTP_204_NO_CONTENT)
             logger.info(f"(Success) Comments: User {request.user.username} "
                         f"updated comment #{comment.id} "
                         f"of issue #{comment.issue.id} "
                         f"on project #{comment.issue.project.id}")
-            return Response(serialized_comment.data, status=status.HTTP_204_NO_CONTENT)
+            return res
 
     def destroy(self, request, **kwargs):
         """
@@ -361,8 +382,9 @@ class CommentModelViewSet(ModelViewSet):
         self.check_object_permissions(request, comment)
         comment.delete()
         serializer = self.serializer_class(comment)
+        res = Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
         logger.info(f"(Success) Comments: User {request.user.username} "
                     f"deleted comment #{comment.id} of "
                     f"issue #{comment.issue.id} "
                     f"(project #{comment.issue.project.id}")
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        return res
