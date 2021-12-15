@@ -13,6 +13,8 @@ Study project for Django REST API Framework
 ## 1. Presentation <a name="presentation"></a>
 This Project is a Django REST API providing a per-project ticketing system.
 It can be accessed via requests.
+
+The documentation is available at : https://documenter.getpostman.com/view/12451273/UVJeEG88
 ***
 
 ## 2. Prerequisites (for developers) <a name="prerequisites"></a>
@@ -82,6 +84,13 @@ $ C:\Users\'Username'\'venv_name'\Scripts\activate.bat
 _install project requirements:_            
 $ pip install -r requirements.txt
 ***
+
+__Set the environment variables:__
+create a file :"environment_variables.py" in the base directory "SoftdDesk"
+declare the following variables that will be used in "settings.py":
+- SECRET_KEY = String: The Secret Key of the application
+- db_filename = String: Name of the Database
+- apps_logs_filename = String:  Name of the Log File
 
 ## 4. Execution <a name="execution"></a>
 from the terminal, in the root directory of the project:
